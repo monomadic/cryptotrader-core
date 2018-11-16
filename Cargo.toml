@@ -2,6 +2,17 @@
 name = "cryptotrader-core"
 version = "0.1.0"
 authors = ["Rob Saunders <rob@wearebrandnew.com>"]
-edition = "2018"
 
 [dependencies]
+binance = { git = "https://github.com/robsaunders/binance-rs.git" }
+ta-lib-wrapper = "0.1.1"
+reqwest = "0.8.4"
+math = "*"
+toml = "*"
+serde = "^1.0"
+serde_derive = "^1.0"
+serde_json = "*"
+rayon = "1.0"
+
+[lib]
+name = "cryptotrader"
