@@ -1,6 +1,10 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
+use std::fmt;
+use std::fmt::Display;
+use std::error::Error;
+
 #[derive(Debug)]
 pub struct TrailerError {
     pub error_type: TrailerErrorType,
@@ -16,6 +20,19 @@ pub enum TrailerErrorType {
     ConfigError,
     Unsupported,
     Generic,
+}
+
+impl Error for TrailerError {
+    fn description(&self) -> &str { "TrailerError" }
+}
+
+impl Display for TrailerError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self.error_type {
+            TrailerErrorType::ImportError => write!(f, "ImportError"),
+            _ => write!(f, "other"),
+        }
+    }
 }
 
 impl TrailerError {
