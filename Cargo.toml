@@ -1,5 +1,5 @@
 [package]
-name = "cryptotrader-core"
+name = "cryptotrader"
 version = "0.1.0"
 authors = ["Rob Saunders <rob@wearebrandnew.com>"]
 
