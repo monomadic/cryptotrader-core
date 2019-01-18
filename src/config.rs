@@ -73,7 +73,7 @@ pub fn read(debug: bool) -> Result<Config, TrailerError> {
         return Ok(String::from_utf8(bytebuffer)?)
     }
 
-    let home_path = ::std::env::home_dir().ok_or(TrailerError::generic("cannot get homedir"))?;
+    let home_path = dirs::home_dir().ok_or_else(|| TrailerError::generic("cannot get homedir"))?;
 
     // search paths for config files, in order of search preference.
     let search_paths = vec![

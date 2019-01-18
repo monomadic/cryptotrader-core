@@ -14,6 +14,7 @@ extern crate serde;
 // extern crate itertools;
 extern crate ta_lib_wrapper as talib;
 extern crate rayon;
+extern crate dirs;
 
 pub mod config;
 pub mod error;
