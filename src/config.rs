@@ -2,9 +2,10 @@
 #![allow(unused_variables)]
 
 use toml;
-use crate::error::*;
-
+use serde_derive::Deserialize;
 use std::collections::BTreeMap;
+
+use crate::error::*;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Config {

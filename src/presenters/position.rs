@@ -9,6 +9,9 @@ pub struct PositionPresenter {
     pub wallet_qty:     f64,
 }
 
+/// ```2018edition
+/// use super::*;
+/// ```
 impl PositionPresenter {
     pub fn symbol(&self) -> String {
         self.position.symbol()

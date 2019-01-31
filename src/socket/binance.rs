@@ -3,11 +3,11 @@
 
 // NOTE: Binance rate limits are: 1200 requests per minute; 10 orders per second; 100,000 orders per 24hrs. 
 
-use binance::websockets::MarketEventHandler;
-use binance::model::TradesEvent;
-use binance::model::DepthOrderBookEvent;
-use binance::model::OrderBook;
-use binance::websockets::WebSockets;
+use binance_api::websockets::MarketEventHandler;
+use binance_api::model::TradesEvent;
+use binance_api::model::DepthOrderBookEvent;
+use binance_api::model::OrderBook;
+use binance_api::websockets::WebSockets;
 
 use crate::error::TrailerError;
 // use ::models::*;

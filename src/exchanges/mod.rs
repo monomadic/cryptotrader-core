@@ -3,6 +3,8 @@ pub mod binance;
 // pub mod bitfinex;
 // pub mod kucoin;
 
+use serde_derive::Deserialize;
+
 use crate::models::*;
 use crate::error::*;
 

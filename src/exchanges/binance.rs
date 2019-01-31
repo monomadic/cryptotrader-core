@@ -1,11 +1,11 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use crate::binance::api::*;
-use crate::binance::account::*;
-use crate::binance::market::*;
-use crate::binance::websockets::*;
-use crate::binance::model::{ TradesEvent, DepthOrderBookEvent, OrderBook };
+use binance_api::api::*;
+use binance_api::account::*;
+use binance_api::market::*;
+use binance_api::websockets::*;
+use binance_api::model::{ TradesEvent, DepthOrderBookEvent, OrderBook };
 
 use std::collections::HashMap;
 
@@ -22,7 +22,6 @@ pub struct BinanceAPI {
 pub struct BinanceWS {
     socket: WebSockets,
 }
-
 
 struct BinanceWebSocketHandler;
 
@@ -41,16 +40,7 @@ impl ExchangeAPI for BinanceAPI {
     fn display(&self) -> String { "Binance".to_string() }
     fn btc_symbol(&self) -> String { "BTC".into() }
     fn usd_symbol(&self) -> String { "USDT".into() }
-
     fn btc_price(&self) -> Result<f64, TrailerError> { Ok(self.price("BTCUSDT").or(Err(TrailerError::generic("could not find the BTCUSDT symbol.")))?) }
-
-    // basic (unenriched) list of
-    // fn balances(&self) -> Result<Balances, TrailerError> {
-    //     let balances = self.balances()?;
-
-    //     Ok(balances)
-    // }
-
 
     fn funds(&self) -> Result<Funds, TrailerError> {
         let balances = self.balances()?;
@@ -101,12 +91,12 @@ impl ExchangeAPI for BinanceAPI {
         Ok(self.market.get_price(symbol)?)
     }
 
-    fn prices(&self) -> Result<crate::models::Prices, TrailerError> {
+    fn prices(&self) -> Result<Prices, TrailerError> {
         let market_prices = self.market.get_all_prices()?;
         let mut p = HashMap::new();
 
         match market_prices {
-            ::binance::model::Prices::AllPrices(prices) => {
+            binance_api::model::Prices::AllPrices(prices) => {
                 for price in prices {
                     p.insert(
                         price.symbol,
@@ -177,7 +167,7 @@ impl ExchangeAPI for BinanceAPI {
     }
 }
 
-use crate::binance::errors::Error as BinanceError;
+use binance_api::errors::Error as BinanceError;
 impl From<BinanceError> for crate::error::TrailerError {
     fn from(error: BinanceError) -> Self {
         crate::error::TrailerError {
