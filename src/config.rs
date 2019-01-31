@@ -2,7 +2,7 @@
 #![allow(unused_variables)]
 
 use toml;
-use ::error::*;
+use crate::error::*;
 
 use std::collections::BTreeMap;
 
@@ -52,7 +52,7 @@ impl From<::toml::de::Error> for TrailerError {
     }
 }
 
-pub fn read(debug: bool) -> Result<Config, TrailerError> {
+pub fn read() -> Result<Config, TrailerError> {
     pub fn file_exists(path: &str) -> bool {
         use std::fs;
 
@@ -70,7 +70,7 @@ pub fn read(debug: bool) -> Result<Config, TrailerError> {
 
         handle.read_to_end(&mut bytebuffer)?;
 
-        return Ok(String::from_utf8(bytebuffer)?)
+        Ok(String::from_utf8(bytebuffer)?)
     }
 
     let home_path = dirs::home_dir().ok_or_else(|| TrailerError::generic("cannot get homedir"))?;
@@ -84,7 +84,7 @@ pub fn read(debug: bool) -> Result<Config, TrailerError> {
 
     for path in search_paths.clone() {
         if file_exists(&path) {
-            if debug { println!("loading config from {}", path) };
+            // info!("loading config from {}", path);
             return Ok(toml::from_str(&str_from_file_path(&path)?)?);
         }
     };

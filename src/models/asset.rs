@@ -1,4 +1,4 @@
-use exchanges::*;
+use crate::exchanges::*;
 
 #[derive(Debug, Clone)]
 pub struct Asset {

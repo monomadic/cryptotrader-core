@@ -9,7 +9,7 @@ use binance::model::DepthOrderBookEvent;
 use binance::model::OrderBook;
 use binance::websockets::WebSockets;
 
-use error::TrailerError;
+use crate::error::TrailerError;
 // use ::models::*;
 use super::Event;
 

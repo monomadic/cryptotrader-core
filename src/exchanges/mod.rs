@@ -3,8 +3,8 @@ pub mod binance;
 // pub mod bitfinex;
 // pub mod kucoin;
 
-use ::models::*;
-use ::error::*;
+use crate::models::*;
+use crate::error::*;
 
 pub trait ExchangeAPI {
     fn display(&self)               -> String;

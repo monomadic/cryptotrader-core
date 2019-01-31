@@ -1,4 +1,4 @@
-use models::*;
+use crate::models::*;
 
 #[derive(Debug, Clone)]
 pub struct Order {
@@ -56,13 +56,13 @@ pub fn group_by_price(orders: Vec<Order>) -> Vec<Order> {
 
 #[cfg(test)]
 fn order_fixture(order_type: TradeType, qty: f64, price: f64) -> Order {
-    Order{ id: "".to_string(), symbol: "".to_string(), order_type: order_type, qty: qty, price: price }
+    Order{ id: "".to_string(), symbol: "".to_string(), order_type, qty, price }
 }
 
 #[test]
 fn test_group_by_price_1() {
     fn order_fixture(order_type: TradeType, qty: f64, price: f64) -> Order {
-        Order{ id: "".to_string(), symbol: "".to_string(), order_type: order_type, qty: qty, price: price }
+        Order{ id: "".to_string(), symbol: "".to_string(), order_type, qty, price }
     }
 
     let orders = group_by_price(vec![

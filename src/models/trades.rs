@@ -8,37 +8,38 @@ pub struct Trade {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::models::Trade;
 
     #[test]
     fn test_sum_qty() {
         assert_eq!(20.0, sum_qty(vec![
-            ::models::Trade{ cost: 10., qty: 10.0, buy: true },
-            ::models::Trade{ cost: 20., qty: 10.0, buy: true },
+            Trade{ cost: 10., qty: 10.0, buy: true },
+            Trade{ cost: 20., qty: 10.0, buy: true },
         ]));
         assert_eq!(10.0, sum_qty(vec![
-            ::models::Trade{ cost: 10., qty: 10.0, buy: true },
-            ::models::Trade{ cost: 20., qty: 10.0, buy: true },
-            ::models::Trade{ cost: 10., qty: 10.0, buy: false },
+            Trade{ cost: 10., qty: 10.0, buy: true },
+            Trade{ cost: 20., qty: 10.0, buy: true },
+            Trade{ cost: 10., qty: 10.0, buy: false },
         ]));
     }
 
     #[test]
     fn test_average_cost() {
         assert_eq!(15.0, average_cost(vec![
-            ::models::Trade{ cost: 10., qty: 1.0, buy: true },
-            ::models::Trade{ cost: 20., qty: 1.0, buy: true },
+            Trade{ cost: 10., qty: 1.0, buy: true },
+            Trade{ cost: 20., qty: 1.0, buy: true },
         ]));
         assert_eq!(17.5, average_cost(vec![
-            ::models::Trade{ cost: 10., qty: 10.0, buy: true },
-            ::models::Trade{ cost: 20., qty: 30.0, buy: true },
+            Trade{ cost: 10., qty: 10.0, buy: true },
+            Trade{ cost: 20., qty: 30.0, buy: true },
         ]));
     }
 
     #[test]
     fn test_average_trades() {
         let result = average_trades(vec![
-            ::models::Trade{ cost: 10., qty: 10.0, buy: true },
-            ::models::Trade{ cost: 20., qty: 10.0, buy: true },
+            Trade{ cost: 10., qty: 10.0, buy: true },
+            Trade{ cost: 20., qty: 10.0, buy: true },
         ]);
         assert_eq!(1, result.len());
 

@@ -1,4 +1,4 @@
-use models::*;
+use crate::models::*;
 
 #[derive(Debug, Clone)]
 pub struct Position {
@@ -75,6 +75,32 @@ impl Position {
 	}
 }
 
+/// group orders by balance reaching zero
+///
+/// ```edition2018
+/// use crate::models::*;
+/// assert(1, 1);
+/// ```
+/// let orders = vec![
+///     order_fixture(TradeType::Buy, 10.0, 100.0),
+/// ]
+///
+/// assert(vec![], group_orders_by_zero_crossing(orders));
+/// 
+pub fn group_orders_by_zero_crossing(orders: Vec<Order>) -> Vec<Vec<Order>> {
+    let mut orders = orders.clone();
+    let mut positions = Vec::new();
+    let mut current_balance:f64 = 0.0_f64;
+
+    while let Some(last_order) = orders.pop() {
+        positions.push(vec![last_order]);
+    };
+
+    positions
+
+}
+
+/// group orders into buy-sell buy-sell buy-sell
 pub fn group_orders_by_positions(orders: Vec<Order>) -> Vec<(Vec<Order>)> {
 	let mut positions = Vec::new();
 	let mut current_orders:Vec<Order> = Vec::new();
@@ -112,7 +138,7 @@ pub fn price_percent(entry_price: f64, exit_price: f64) -> f64 {
 }
 
 fn order_fixture(order_type: TradeType, qty: f64, price: f64) -> Order {
-    Order{ id: "".to_string(), symbol: "".to_string(), order_type: order_type, qty: qty, price: price }
+    Order{ id: "".to_string(), symbol: "".to_string(), order_type, qty, price }
 }
 
 #[cfg(test)]

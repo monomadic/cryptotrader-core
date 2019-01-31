@@ -1,5 +1,5 @@
-use error::*;
-use models::*;
+use crate::error::*;
+use crate::models::*;
 
 use talib::{TA_Integer, TA_RSI,  TA_RetCode};
 /// Compute RSI(period) on `close_prices`

@@ -1,16 +1,17 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use binance::api::*;
-use binance::account::*;
-use binance::market::*;
-use binance::websockets::*;
+use crate::binance::api::*;
+use crate::binance::account::*;
+use crate::binance::market::*;
+use crate::binance::websockets::*;
+use crate::binance::model::{ TradesEvent, DepthOrderBookEvent, OrderBook };
 
 use std::collections::HashMap;
 
-use ::models::*;
-use ::error::*;
-use ::exchanges::*;
+use crate::models::*;
+use crate::error::*;
+use crate::exchanges::*;
 
 #[derive(Clone)]
 pub struct BinanceAPI {
@@ -22,7 +23,6 @@ pub struct BinanceWS {
     socket: WebSockets,
 }
 
-use binance::model::{ TradesEvent, DepthOrderBookEvent, OrderBook };
 
 struct BinanceWebSocketHandler;
 
@@ -75,9 +75,9 @@ impl ExchangeAPI for BinanceAPI {
         // }
 
         Ok(Funds {
-            btc:                btc,
-            fiat:               balances.clone().into_iter().filter(|c| c.symbol == "USDT").collect(),
-            alts:               alts,
+            btc,
+            fiat: balances.clone().into_iter().filter(|c| c.symbol == "USDT").collect(),
+            alts,
         })
     }
 
@@ -101,7 +101,7 @@ impl ExchangeAPI for BinanceAPI {
         Ok(self.market.get_price(symbol)?)
     }
 
-    fn prices(&self) -> Result<::models::Prices, TrailerError> {
+    fn prices(&self) -> Result<crate::models::Prices, TrailerError> {
         let market_prices = self.market.get_all_prices()?;
         let mut p = HashMap::new();
 
@@ -177,11 +177,11 @@ impl ExchangeAPI for BinanceAPI {
     }
 }
 
-use binance::errors::Error as BinanceError;
-impl From<BinanceError> for ::error::TrailerError {
+use crate::binance::errors::Error as BinanceError;
+impl From<BinanceError> for crate::error::TrailerError {
     fn from(error: BinanceError) -> Self {
-        ::error::TrailerError {
-            error_type: ::error::TrailerErrorType::APIError,
+        crate::error::TrailerError {
+            error_type: crate::error::TrailerErrorType::APIError,
             message: error.description().to_string(),
         }
     }
@@ -216,7 +216,7 @@ impl BinanceAPI {
                     let cost = trade.price;
                     let qty = trade.qty;
 
-                    Trade { cost: cost, qty: qty, buy: trade.is_buyer }
+                    Trade { cost, qty, buy: trade.is_buyer }
                 }).collect()
             },
             Err(e) => {

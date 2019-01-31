@@ -1,21 +1,30 @@
-use models::*;
-use presenters::*;
+use crate::models::*;
+use crate::presenters::*;
 
 #[derive(Debug, Clone)]
 pub struct PositionPresenter {
     pub position:           Position,
     pub current_price:      f64,
     pub btc_price_in_usd:   f64,
+    pub wallet_qty:     f64,
 }
 
 impl PositionPresenter {
+    pub fn symbol(&self) -> String {
+        self.position.symbol()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        self.position.remaining_qty() == self.wallet_qty
+    }
+
     pub fn order_presenters(&self) -> Vec<OrderPresenter> {
         self.position.orders.clone().into_iter().map(|o|
             OrderPresenter { order: o, btc_value: self.btc_price_in_usd } ).collect()
     }
 
     pub fn current_value_in_btc(&self) -> f64 {
-        self.position.remaining_qty() * self.current_price
+        self.wallet_qty * self.current_price
     }
 
     pub fn current_value_in_usd(&self) -> f64 {
@@ -66,7 +75,7 @@ mod tests {
     use super::*;
 
     fn order_fixture(order_type: TradeType, qty: f64, price: f64) -> Order {
-        Order{ id: "".to_string(), symbol: "".to_string(), order_type: order_type, qty: qty, price: price }
+        Order{ id: "".to_string(), symbol: "".to_string(), order_type, qty, price }
     }
 
     #[test]
@@ -80,6 +89,7 @@ mod tests {
             position:           position.first().unwrap().clone(),
             current_price:      110.0,
             btc_price_in_usd:   2.0,
+            wallet_qty:     0.0,
         };
 
         assert_eq!(presenter.current_value_in_btc(), 110.0);
@@ -106,6 +116,7 @@ mod tests {
             position:           position.first().unwrap().clone(),
             current_price:      110.0,
             btc_price_in_usd:   2.0,
+            wallet_qty:     0.0,
         };
 
         assert_eq!(presenter.position.buy_qty(), 4.0);
@@ -119,4 +130,6 @@ mod tests {
         assert_eq!(presenter.unrealised_profit_btc(), 15.0); // 330 possible sale, paid 3x105=315 = 15
         assert_eq!(presenter.percent_change().floor(), 4.0);
     }
+
+
 }

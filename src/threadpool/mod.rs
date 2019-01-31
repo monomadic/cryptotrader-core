@@ -2,9 +2,9 @@ use std::sync::Arc;
 // use rayon;
 use rayon::prelude::*;
 
-use exchanges::*;
-use models::*;
-use error::*;
+use crate::exchanges::*;
+use crate::models::*;
+use crate::error::*;
 
 use std::collections::HashMap;
 // static MAX_THREADS:usize = 8;

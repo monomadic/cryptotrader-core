@@ -1,5 +1,5 @@
-use models::*;
-use presenters::*;
+use crate::models::*;
+use crate::presenters::*;
 
 #[derive(Debug, Clone)]
 pub struct FundsPresenter {
@@ -52,7 +52,7 @@ impl FundsPresenter {
         } else { None };
 
         Self {
-            btc:                    btc,
+            btc,
             fiat:                   fiat.collect(),
             alts:                   alts.collect(),
             total_value_in_usd:     total_price_in_usd,
