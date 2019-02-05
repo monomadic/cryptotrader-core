@@ -112,13 +112,13 @@ pub fn price_percent(entry_price: f64, exit_price: f64) -> f64 {
 	else { -(100. + -100. / entry_price * exit_price) }
 }
 
-fn order_fixture(order_type: TradeType, qty: f64, price: f64) -> Order {
-    Order{ id: "".to_string(), symbol: "".to_string(), order_type, qty, price }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn order_fixture(order_type: TradeType, qty: f64, price: f64) -> Order {
+        Order{ id: "".to_string(), symbol: "".to_string(), order_type, qty, price }
+    }
 
     #[test]
     fn test_group_orders_by_positions_1() {
