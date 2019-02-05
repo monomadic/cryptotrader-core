@@ -40,8 +40,7 @@ pub enum Exchange {
     Kucoin,
 }
 
-use std::str::FromStr;
-impl FromStr for Exchange {
+impl std::str::FromStr for Exchange {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Exchange, ()> {

@@ -1,17 +1,21 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use binance_api::api::*;
-use binance_api::account::*;
-use binance_api::market::*;
-use binance_api::websockets::*;
-use binance_api::model::{ TradesEvent, DepthOrderBookEvent, OrderBook };
+use crate::{
+    models::*,
+    error::*,
+    exchanges::*,
+};
+
+use binance_api::{
+    api::*,
+    account::*,
+    market::*,
+    websockets::*,
+    model::{ TradesEvent, DepthOrderBookEvent, OrderBook },
+};
 
 use std::collections::HashMap;
-
-use crate::models::*;
-use crate::error::*;
-use crate::exchanges::*;
 
 #[derive(Clone)]
 pub struct BinanceAPI {
