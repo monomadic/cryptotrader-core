@@ -1,8 +1,8 @@
 pub mod config;
 pub mod error;
 pub mod exchanges;
-pub mod socket;
 pub mod threadpool;
+
 pub mod models {
     mod asset; pub use self::asset::*;
     mod funds; pub use self::funds::*;
@@ -14,6 +14,7 @@ pub mod models {
     mod price; pub use self::price::*;
     mod balance; pub use self::balance::*;
 }
+
 pub mod presenters {
     mod asset;
     mod funds;
@@ -22,6 +23,16 @@ pub mod presenters {
 
     pub use self::{ asset::*, funds::*, position::*, order::* };
 }
+
 pub mod indicators {
     pub mod rsi;
+}
+
+pub mod socket {
+    pub mod binance; pub use self::binance::BinanceWS;
+
+    #[derive(Debug)]
+    pub enum Event {
+        PriceChange(String, f64, f64),
+    }
 }
