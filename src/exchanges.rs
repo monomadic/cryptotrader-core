@@ -12,12 +12,11 @@ pub trait ExchangeAPI {
     fn display(&self)               -> String;
     fn btc_symbol(&self)            -> String;
     fn usd_symbol(&self)            -> String;
-    fn btc_price(&self)             -> Result<f64, TrailerError>;
-    
+    fn btc_price(&self)             -> Result<Pair, TrailerError>;
     fn funds(&self)                 -> Result<Funds, TrailerError>;
     fn balances(&self)              -> Result<Vec<Asset>, TrailerError>;
-    fn price(&self, symbol: &str)   -> Result<f64, TrailerError>;
-    fn prices(&self)                -> Result<Prices, TrailerError>;
+    fn pair(&self, pair: &str)      -> Result<Pair, TrailerError>;
+    fn all_pairs(&self)             -> Result<Vec<Pair>, TrailerError>;
     fn limit_buy(&self, symbol: &str, amount: f64, price: f64) -> Result<(), TrailerError>;
     fn limit_sell(&self, symbol: &str, amount: f64, price: f64) -> Result<(), TrailerError>;
     fn stop_loss(&self, symbol: &str, amount: f64, stop_price: f64, limit_price: f64) -> Result<(), TrailerError>;

@@ -13,6 +13,7 @@ pub mod models {
     mod position; pub use self::position::*;
     mod price; pub use self::price::*;
     mod balance; pub use self::balance::*;
+    mod pair; pub use self::pair::*;
 }
 
 pub mod presenters {

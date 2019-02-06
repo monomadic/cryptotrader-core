@@ -1,5 +1,6 @@
 use crate::models::*;
 use crate::presenters::*;
+// use crate::error::*;
 
 #[derive(Debug, Clone)]
 pub struct PositionPresenter {
@@ -9,10 +10,11 @@ pub struct PositionPresenter {
     pub wallet_qty: f64,
 }
 
-/// ```2018edition
-/// use super::*;
-/// ```
 impl PositionPresenter {
+    // pub fn new(position: Position, prices: Vec<Pair>, assets: Vec<Asset>) -> CoreResult<Self> {
+
+    // }
+
     pub fn symbol(&self) -> String {
         self.position.symbol()
     }
@@ -64,6 +66,13 @@ impl PositionPresenter {
     }
 }
 
+/// Expresses the difference as a percentage between two floats.
+///
+/// ```rust
+/// use cryptotrader::presenters::price_percent;
+/// assert_eq!(price_percent(5.0, 10.0), 100.0);
+/// assert_eq!(price_percent(100.0, 50.0), -50.0);
+/// ```
 pub fn price_percent(entry_price: f64, exit_price: f64) -> f64 {
     if entry_price < exit_price { (100. / entry_price * exit_price) - 100. } else { -(100. + -100. / entry_price * exit_price) }
 }
@@ -108,24 +117,38 @@ mod tests {
 
     #[test]
     fn test_position_presenter_state_partial_2() {
-        let position: Vec<Position> = Position::new(vec![
+        let positions: Vec<Position> = Position::new(vec![
             order_fixture(TradeType::Buy, 2.0, 100.0), // value: 200
             order_fixture(TradeType::Buy, 2.0, 110.0), // value: 4x105=420, qty: 4
             order_fixture(TradeType::Sell, 1.0, 150.0), // sold: 1, qty: 3
         ]);
-
         let presenter = PositionPresenter {
-            position: position.first().unwrap().clone(),
+            position: positions.first().unwrap().clone(),
             current_price: 110.0,
             btc_price_in_usd: 2.0,
             wallet_qty: 3.0,
         };
+        assert_eq!(presenter.current_value_in_btc(), 330.0);
+        assert_eq!(presenter.current_value_in_usd(), 660.0);
+        assert_eq!(presenter.realised_profit_btc().floor(), 45.0); // current btc value of profit
+        assert_eq!(presenter.unrealised_profit_btc(), 15.0); // 330 possible sale, paid 3x105=315 = 15
+        assert_eq!(presenter.percent_change().floor(), 4.0);
+    }
 
-        assert_eq!(presenter.position.buy_qty(), 4.0);
-        assert_eq!(presenter.position.sell_qty(), 1.0);
-        assert_eq!(presenter.position.remaining_qty(), 3.0);
-        assert_eq!(presenter.position.entry_price(), 105.0);
-        assert_eq!(presenter.position.exit_price(), Some(150.0));
+    #[test]
+    fn test_position_presenter_state_partial_3() {
+        let positions: Vec<Position> = Position::new(vec![
+            order_fixture(TradeType::Buy, 2.0, 100.0), // value: 200
+            order_fixture(TradeType::Buy, 2.0, 110.0), // value: 420, qty: 4
+            order_fixture(TradeType::Sell, 1.0, 150.0), // sold: 1, qty: 3
+            order_fixture(TradeType::Buy, 2.0, 150.0), // bought: 2, qty: 5
+        ]);
+        let presenter = PositionPresenter {
+            position: positions.first().unwrap().clone(),
+            current_price: 110.0,
+            btc_price_in_usd: 2.0,
+            wallet_qty: 3.0,
+        };
         assert_eq!(presenter.current_value_in_btc(), 330.0);
         assert_eq!(presenter.current_value_in_usd(), 660.0);
         assert_eq!(presenter.realised_profit_btc().floor(), 45.0); // current btc value of profit

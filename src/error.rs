@@ -1,9 +1,9 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use std::fmt;
-use std::fmt::Display;
-use std::error::Error;
+use std::{ fmt, fmt::Display, error::Error };
+
+pub type CoreResult<T> = Result<T, TrailerError>;
 
 #[derive(Debug)]
 pub struct TrailerError {

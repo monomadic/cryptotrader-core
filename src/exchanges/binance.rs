@@ -15,8 +15,6 @@ use binance_api::{
     model::{ TradesEvent, DepthOrderBookEvent, OrderBook },
 };
 
-use std::collections::HashMap;
-
 #[derive(Clone)]
 pub struct BinanceAPI {
     account: Account,
@@ -26,6 +24,8 @@ pub struct BinanceAPI {
 pub struct BinanceWS {
     socket: WebSockets,
 }
+
+pub static BASE_PAIRS:[&str;8] = [ "USDT", "BTC", "ETH", "USDC", "TUSD", "USDT", "BNB", "USDS" ];
 
 struct BinanceWebSocketHandler;
 
@@ -40,11 +40,23 @@ impl MarketEventHandler for BinanceWebSocketHandler {
     fn partial_orderbook_handler(&self, model: &OrderBook) {}
 }
 
+impl BinanceAPI {
+    pub fn connect(api_key: &str, secret_key: &str) -> Self {
+        Self {
+            account: Binance::new(
+                Some(api_key.to_string()),
+                Some(secret_key.to_string())
+            ),
+            market: Market::new(None, None),
+        }
+    }
+}
+
 impl ExchangeAPI for BinanceAPI {
     fn display(&self) -> String { "Binance".to_string() }
     fn btc_symbol(&self) -> String { "BTC".into() }
     fn usd_symbol(&self) -> String { "USDT".into() }
-    fn btc_price(&self) -> Result<f64, TrailerError> { Ok(self.price("BTCUSDT").or(Err(TrailerError::generic("could not find the BTCUSDT symbol.")))?) }
+    fn btc_price(&self) -> Result<Pair, TrailerError> { self.pair("BTCUSDT") }
 
     fn funds(&self) -> Result<Funds, TrailerError> {
         let balances = self.balances()?;
@@ -54,19 +66,6 @@ impl ExchangeAPI for BinanceAPI {
 
         let alts_all:Vec<Asset> = balances.clone().into_iter().filter(|c| c.symbol != "USDT" && c.symbol != "BTC").collect();
         let alts:Vec<Asset> = alts_all.into_iter().filter(|c| c.amount > 0.9).collect();
-
-        // let btc_price = self.btc_price()?;
-
-        // // assign a price to btc if it exists.
-        // if let Some(ref mut b) = btc {
-        //     b.value_in_btc = Some(1.0);
-        //     b.value_in_usd = Some(btc_price);
-        // }
-        
-        // add prices
-        // for mut alt in alts.iter_mut() {
-        //     alt.value_in_btc = prices.get(&format!("{}{}", alt.symbol, "BTC")).cloned();
-        // }
 
         Ok(Funds {
             btc,
@@ -85,31 +84,35 @@ impl ExchangeAPI for BinanceAPI {
                 amount: balance.free.parse::<f64>().unwrap() + balance.locked.parse::<f64>().unwrap(),
                 locked: balance.locked.parse::<f64>().unwrap(),
                 exchange: Exchange::Binance,
-                // value_in_btc: None,
-                // value_in_usd: None,
             }
         }).filter(|b| b.amount > 0.0).collect())
     }
 
-    fn price(&self, symbol: &str) -> Result<f64, TrailerError> {
-        Ok(self.market.get_price(symbol)?)
+    fn pair(&self, pair: &str) -> Result<Pair, TrailerError> {
+        let price = self.market.get_price(pair)?;
+        let (symbol, base) = split_symbol_and_base(pair)?;
+
+        Ok(Pair{ symbol: symbol.to_string(), base: base.to_string(), price })
     }
 
-    fn prices(&self) -> Result<Prices, TrailerError> {
+    fn all_pairs(&self) -> Result<Vec<Pair>, TrailerError> {
         let market_prices = self.market.get_all_prices()?;
-        let mut p = HashMap::new();
 
-        match market_prices {
-            binance_api::model::Prices::AllPrices(prices) => {
-                for price in prices {
-                    p.insert(
-                        price.symbol,
-                        price.price);
+        // because the binance api rust lib is stupidly made
+        let prices = match market_prices {
+            binance_api::model::Prices::AllPrices(prices) => prices
+        };
+
+        Ok(
+            prices.into_iter().map(|pair| {
+                let price = pair.price;
+                match split_symbol_and_base(&pair.symbol) {
+                    Ok((symbol, base)) => Some(Pair { base, price, symbol }),
+                    Err(e) => None,
                 }
-            }
-        }
-
-        Ok(p)
+            })
+            .filter(|r|r.is_some()).map(|r|r.unwrap()).collect()
+        )
     }
 
     fn limit_buy(&self, symbol: &str, amount: f64, price: f64) -> Result<(), TrailerError> {
@@ -202,7 +205,6 @@ pub fn connect(api_key: &str, secret_key: &str) -> BinanceAPI {
 }
 
 impl BinanceAPI {
-
     pub fn trades(&self, coin: &str) -> Vec<Trade> {
         match self.account.trade_history(coin) {
             Ok(answer) => {
@@ -219,49 +221,11 @@ impl BinanceAPI {
             },
         }
     }
+}
 
-    // pub fn show_trades(&self, coin: &str) {
-
-    //     match self.account.trade_history(coin.into()) {
-    //         Ok(answer) => {
-    //             println!("\nTrade History: {}", coin);
-    //             let mut total_cost = 0.0_f64;
-    //             let mut total_amount = 0.0f64;
-    //             // let average_buy_price = 0.0_f64;
-
-    //             let mut total_buy_cost = 0.0_f64;
-    //             let mut total_buy_amount = 0.0_f64;
-
-    //             let mut total_sell_cost = 0.0_f64;
-    //             let mut total_sell_amount = 0.0_f64;
-
-    //             for trade in answer {
-    //                 let cost = trade.price.parse::<f64>().unwrap();
-    //                 let qty = trade.qty.parse::<f64>().unwrap();
-    //                 // println!("{:?}", trade);
-    //                 if trade.is_buyer {
-    //                     total_amount = total_amount + qty;
-    //                     total_cost = total_cost + cost;
-
-    //                     total_buy_cost = total_buy_cost + (qty * cost);
-    //                     total_buy_amount = total_buy_amount + qty;
-    //                     println!("+ {:12} {:12} b: {:.2}", trade.qty.green(), trade.price, total_amount);
-    //                 } else {
-    //                     total_amount = total_amount - qty;
-    //                     total_cost = total_cost - cost;
-
-    //                     total_sell_cost = total_sell_cost + (qty * cost);
-    //                     total_sell_amount = total_sell_amount + qty;
-
-    //                     println!("- {:12} {:12} b: {:.2}", trade.qty.red(), trade.price, total_amount);
-    //                 }
-    //             }
-
-    //             println!("\n{} average buy cost:\n\tall time: {}", coin, format!("{:.8}", total_buy_cost / total_buy_amount).green());
-    //             println!("\n{} average sell cost:\n\tall time: {}", coin, format!("{:.8}", total_sell_cost / total_sell_amount).red());
-    //         },
-    //         Err(e) => println!("Error: {}", e),
-    //     }
-    // }
-
+fn split_symbol_and_base(pair: &str) -> Result<(String, String), TrailerError> {
+    for base in BASE_PAIRS.iter() {
+        if pair.ends_with(base) { return Ok((pair.trim_end_matches(base).to_string(), base.to_string())) };
+    }
+    Err(TrailerError::generic("base pair not found"))
 }
