@@ -26,11 +26,11 @@ pub trait ExchangeAPI {
     fn pair_format(&self, pair: Pair) -> String;
 
     fn btc_pair(&self, pairs: Vec<Pair>) -> Option<Pair> {
-        let pair = pairs.into_iter()
-            .filter(|pair| pair.base == self.btc_symbol() && pair.symbol == self.usd_symbol())
-            .collect::<Vec<Pair>>();
+        find_pair_by_symbol_and_base(&self.btc_symbol(), &self.usd_symbol(), pairs)
+    }
 
-        pair.first().map(|p|p.clone())
+    fn usd_pair(&self, pairs: Vec<Pair>) -> Option<Pair> {
+        find_pair_by_symbol_and_base(&self.usd_symbol(), &self.btc_symbol(), pairs)
     }
 }
 

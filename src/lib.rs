@@ -10,7 +10,6 @@ pub mod models {
     mod trades; pub use self::trades::*;
     mod trade_type; pub use self::trade_type::*;
     mod position; pub use self::position::*;
-    mod balance; pub use self::balance::*;
     mod pair; pub use self::pair::*;
 }
 
