@@ -5,48 +5,57 @@ use crate::presenters::*;
 #[derive(Debug, Clone)]
 pub struct PositionPresenter {
     pub position: Position,
-    pub current_price: f64,
-    pub btc_price_in_usd: f64,
-    pub wallet_qty: f64,
+    pub pairs: Vec<Pair>,
 }
 
 impl PositionPresenter {
-    // pub fn new(position: Position, prices: Vec<Pair>, assets: Vec<Asset>) -> CoreResult<Self> {
+    pub fn new(position: Position, pairs: Vec<Pair>) -> Self {
+        Self {
+            position,
+            pairs,
+        }
+    }
 
-    // }
+    pub fn price_in_btc(&self) -> f64 {
+        find_pair_by_symbol_and_base(&self.symbol(), "BTC", self.pairs.clone()).map(|p| p.price).unwrap_or(0.0)
+    }
+
+    pub fn price_in_usd(&self) -> f64 {
+        find_pair_by_symbol_and_base(&self.symbol(), "USDT", self.pairs.clone()).map(|p| p.price).unwrap_or(0.0)
+    }
 
     pub fn symbol(&self) -> String {
         self.position.symbol()
     }
 
     pub fn is_valid(&self) -> bool {
-        self.position.remaining_qty() == self.wallet_qty
+        self.position.remaining_qty() == self.position.wallet_qty
     }
 
     pub fn order_presenters(&self) -> Vec<OrderPresenter> {
         self.position.orders.clone().into_iter().map(|o|
-            OrderPresenter { order: o, btc_value: self.btc_price_in_usd }).collect()
+            OrderPresenter { order: o, btc_value: self.price_in_usd() }).collect()
     }
 
     pub fn current_value_in_btc(&self) -> f64 {
-        self.wallet_qty * self.current_price
+        self.position.wallet_qty * self.price_in_btc()
     }
 
     pub fn current_value_in_usd(&self) -> f64 {
-        self.current_value_in_btc() * self.btc_price_in_usd
+        self.current_value_in_btc() * self.price_in_usd()
     }
 
     pub fn percent_change(&self) -> f64 {
-        price_percent(self.position.entry_price(), self.current_price)
+        price_percent(self.position.entry_price(), self.price_in_btc())
     }
 
     /// price of remaining units at the current price - those units at buy price
     pub fn unrealised_profit_btc(&self) -> f64 {
-        ((self.current_price * self.position.remaining_qty()) - (self.position.entry_price() * self.position.remaining_qty()))
+        ((self.price_in_btc() * self.position.remaining_qty()) - (self.position.entry_price() * self.position.remaining_qty()))
     }
 
     pub fn unrealised_profit_usd(&self) -> f64 {
-        self.unrealised_profit_btc() * self.btc_price_in_usd
+        self.unrealised_profit_btc() * self.price_in_usd()
     }
 
     pub fn realised_profit_btc(&self) -> f64 {
@@ -56,7 +65,7 @@ impl PositionPresenter {
     }
 
     pub fn realised_profit_usd(&self) -> f64 {
-        self.realised_profit_btc() * self.btc_price_in_usd
+        self.realised_profit_btc() * self.price_in_usd()
     }
 
     pub fn realised_profit_percent(&self) -> f64 {
@@ -89,6 +98,14 @@ mod tests {
         Order { id: "".to_string(), symbol: "".to_string(), order_type, qty, price }
     }
 
+    fn btc_pair(price: f64) -> Pair {
+        Pair { base: "BTC".to_string(), symbol: "SMUSH".to_string(), price: price }
+    }
+
+    fn usd_pair(price: f64) -> Pair {
+        Pair { base: "USD".to_string(), symbol: "SMUSH".to_string(), price: price }
+    }
+
     #[test]
     fn test_position_presenter_state_partial_1() {
         let position: Vec<Position> = Position::new(vec![
@@ -98,9 +115,7 @@ mod tests {
 
         let presenter = PositionPresenter {
             position: position.first().unwrap().clone(),
-            current_price: 110.0,
-            btc_price_in_usd: 2.0,
-            wallet_qty: 1.0,
+            pairs: vec![usd_pair(110.0), btc_pair(2.0)],
         };
 
         assert_eq!(presenter.current_value_in_btc(), 110.0);
@@ -124,9 +139,7 @@ mod tests {
         ]);
         let presenter = PositionPresenter {
             position: positions.first().unwrap().clone(),
-            current_price: 110.0,
-            btc_price_in_usd: 2.0,
-            wallet_qty: 3.0,
+            pairs: vec![usd_pair(110.0), btc_pair(2.0)],
         };
         assert_eq!(presenter.current_value_in_btc(), 330.0);
         assert_eq!(presenter.current_value_in_usd(), 660.0);
@@ -145,9 +158,7 @@ mod tests {
         ]);
         let presenter = PositionPresenter {
             position: positions.first().unwrap().clone(),
-            current_price: 110.0,
-            btc_price_in_usd: 2.0,
-            wallet_qty: 3.0,
+            pairs: vec![usd_pair(110.0), btc_pair(2.0)],
         };
         assert_eq!(presenter.current_value_in_btc(), 330.0);
         assert_eq!(presenter.current_value_in_usd(), 660.0);

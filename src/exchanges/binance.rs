@@ -26,6 +26,8 @@ pub struct BinanceWS {
 }
 
 pub static BASE_PAIRS:[&str;8] = [ "USDT", "BTC", "ETH", "USDC", "TUSD", "USDT", "BNB", "USDS" ];
+pub static BTC_SYMBOL:&str = "BTC";
+pub static USD_SYMBOL:&str = "USDT";
 
 struct BinanceWebSocketHandler;
 
@@ -54,8 +56,8 @@ impl BinanceAPI {
 
 impl ExchangeAPI for BinanceAPI {
     fn display(&self) -> String { "Binance".to_string() }
-    fn btc_symbol(&self) -> String { "BTC".into() }
-    fn usd_symbol(&self) -> String { "USDT".into() }
+    fn btc_symbol(&self) -> String { BTC_SYMBOL.into() }
+    fn usd_symbol(&self) -> String { USD_SYMBOL.into() }
     fn btc_price(&self) -> Result<Pair, TrailerError> { self.pair("BTCUSDT") }
 
     fn funds(&self) -> Result<Funds, TrailerError> {
@@ -113,6 +115,10 @@ impl ExchangeAPI for BinanceAPI {
             })
             .filter(|r|r.is_some()).map(|r|r.unwrap()).collect()
         )
+    }
+
+    fn pair_format(&self, pair: Pair) -> String {
+        format!("{}{}", pair.symbol, pair.base)
     }
 
     fn limit_buy(&self, symbol: &str, amount: f64, price: f64) -> Result<(), TrailerError> {
@@ -178,7 +184,7 @@ use binance_api::errors::Error as BinanceError;
 impl From<BinanceError> for crate::error::TrailerError {
     fn from(error: BinanceError) -> Self {
         crate::error::TrailerError {
-            error_type: crate::error::TrailerErrorType::APIError,
+            error_type: crate::error::TrailerErrorType::APIError(error.description().to_string()),
             message: error.description().to_string(),
         }
     }

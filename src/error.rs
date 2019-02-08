@@ -14,12 +14,12 @@ pub struct TrailerError {
 #[derive(Debug)]
 pub enum TrailerErrorType {
     ImportError,
-    APIError,
-    MissingArgumentError(String),
     CommandError,
     ConfigError,
     Unsupported,
     Generic,
+    APIError(String),
+    MissingArgumentError(String),
 }
 
 impl Error for TrailerError {
@@ -28,9 +28,14 @@ impl Error for TrailerError {
 
 impl Display for TrailerError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self.error_type {
+        match &self.error_type {
             TrailerErrorType::ImportError => write!(f, "ImportError"),
-            _ => write!(f, "other"),
+            TrailerErrorType::APIError(arg) => write!(f, "APIError: {}", arg),
+            TrailerErrorType::CommandError => write!(f, "CommandError"),
+            TrailerErrorType::ConfigError => write!(f, "ConfigError"),
+            TrailerErrorType::Unsupported => write!(f, "Unsupported"),
+            TrailerErrorType::Generic => write!(f, "Generic"),
+            TrailerErrorType::MissingArgumentError(arg) => write!(f, "MissingArgumentError: {}", arg),
         }
     }
 }

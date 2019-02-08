@@ -23,17 +23,11 @@ impl Order {
 // reduce all orders with same price together (technically different orders from the order book)
 pub fn group_by_price(orders: Vec<Order>) -> Vec<Order> {
     let mut grouped_orders = Vec::new();
-    let first_order = orders.clone();
-    let first_order = first_order.first();
-    let orders = orders.clone().split_off(1);
-    // println!("orders {:?}", orders.clone());
 
-    // todo: rewrite using peek
-    if let Some(first_order) = first_order {
+    let mut orders = orders.clone();
+    if let Some(first_order) = orders.pop() {
         let mut current_order = first_order.clone();
-        // println!("first {:?}", first_order.clone());
-        // println!("orders {:?}", orders.clone());
-
+        
         if !orders.is_empty() {
             for order in orders {
                 // println!("checking {}={}, {}={}", order.price, current_order.price, order.order_type, current_order.order_type);
@@ -50,7 +44,7 @@ pub fn group_by_price(orders: Vec<Order>) -> Vec<Order> {
 
         grouped_orders.push(current_order.clone());
     }
-    // grouped_orders.into_iter().rev().collect()
+
     grouped_orders
 }
 

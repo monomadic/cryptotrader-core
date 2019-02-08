@@ -3,6 +3,7 @@ use crate::models::*;
 #[derive(Debug, Clone)]
 pub struct Position {
 	pub orders: Vec<Order>,
+    pub wallet_qty: f64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -27,6 +28,12 @@ impl ::std::fmt::Display for PositionState {
 }
 
 impl Position {
+	pub fn new(orders: Vec<Order>) -> Vec<Position> {
+		group_orders_by_positions(orders).into_iter().map(|order_group| {
+			Position { orders: order_group, wallet_qty: 666.66 }
+		}).collect()
+	}
+
 	pub fn symbol(&self) -> String { self.orders.first().unwrap().symbol.clone() }
 
 	pub fn entry_price(&self) -> f64 {
@@ -66,12 +73,6 @@ impl Position {
 
 	pub fn state(&self) -> PositionState {
 		derive_state(self.buy_qty(), self.sell_qty())
-	}
-
-	pub fn new(orders: Vec<Order>) -> Vec<Position> {
-		group_orders_by_positions(orders).into_iter().map(|order_group| {
-			Position { orders: order_group }
-		}).collect()
 	}
 }
 
