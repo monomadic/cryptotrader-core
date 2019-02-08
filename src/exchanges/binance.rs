@@ -82,12 +82,7 @@ impl ExchangeAPI for BinanceAPI {
     }
 
     fn all_pairs(&self) -> Result<Vec<Pair>, TrailerError> {
-        let market_prices = self.market.get_all_prices()?;
-
-        // because the binance api rust lib is stupidly made
-        let prices = match market_prices {
-            binance_api::model::Prices::AllPrices(prices) => prices
-        };
+        let binance_api::model::Prices::AllPrices(prices) = self.market.get_all_prices()?;
 
         Ok(
             prices.into_iter().map(|pair| {
