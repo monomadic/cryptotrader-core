@@ -7,14 +7,3 @@ pub struct Asset {
     pub locked: f64,
     pub exchange: Exchange,
 }
-
-impl Default for Asset {
-    fn default() -> Self {
-        Asset {
-            symbol: "<None>".to_string(),
-            amount: 0.0,
-            locked: 0.0,
-            exchange: Exchange::Binance,
-        }
-    }
-}
