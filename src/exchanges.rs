@@ -5,20 +5,27 @@ pub mod binance;
 
 use serde_derive::Deserialize;
 
-use crate::models::*;
 use crate::error::*;
+use crate::models::*;
 
 pub trait ExchangeAPI {
     fn display(&self) -> String;
     fn btc_symbol(&self) -> String;
     fn usd_symbol(&self) -> String;
+    fn base_pairs(&self) -> Vec<String>;
     fn btc_price(&self) -> Result<Pair, TrailerError>;
     fn balances(&self) -> Result<Vec<Asset>, TrailerError>;
     fn pair(&self, pair: &str) -> Result<Pair, TrailerError>;
     fn all_pairs(&self) -> Result<Vec<Pair>, TrailerError>;
     fn limit_buy(&self, symbol: &str, amount: f64, price: f64) -> Result<(), TrailerError>;
     fn limit_sell(&self, symbol: &str, amount: f64, price: f64) -> Result<(), TrailerError>;
-    fn stop_loss(&self, symbol: &str, amount: f64, stop_price: f64, limit_price: f64) -> Result<(), TrailerError>;
+    fn stop_loss(
+        &self,
+        symbol: &str,
+        amount: f64,
+        stop_price: f64,
+        limit_price: f64,
+    ) -> Result<(), TrailerError>;
     fn open_orders(&self) -> Result<Vec<Order>, TrailerError>;
     fn past_orders(&self) -> Result<Vec<Order>, TrailerError>;
     fn trades_for(&self, symbol: &str) -> Result<Vec<Order>, TrailerError>;
@@ -47,12 +54,12 @@ impl std::str::FromStr for Exchange {
 
     fn from_str(s: &str) -> Result<Exchange, ()> {
         match s {
-            "unknown"       => Ok(Exchange::Unknown),
-            "-"             => Ok(Exchange::Unknown),
-            "bittrex"       => Ok(Exchange::Bittrex),
-            "binance"       => Ok(Exchange::Binance),
-            "kucoin"        => Ok(Exchange::Binance),
-            _               => Err(()),
+            "unknown" => Ok(Exchange::Unknown),
+            "-" => Ok(Exchange::Unknown),
+            "bittrex" => Ok(Exchange::Bittrex),
+            "binance" => Ok(Exchange::Binance),
+            "kucoin" => Ok(Exchange::Binance),
+            _ => Err(()),
         }
     }
 }
