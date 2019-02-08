@@ -60,22 +60,6 @@ impl ExchangeAPI for BinanceAPI {
     fn usd_symbol(&self) -> String { USD_SYMBOL.into() }
     fn btc_price(&self) -> Result<Pair, TrailerError> { self.pair("BTCUSDT") }
 
-    fn funds(&self) -> Result<Funds, TrailerError> {
-        let balances = self.balances()?;
-        // let prices = self.prices()?;
-        let btc = balances.clone().into_iter().find(|c| c.symbol == "BTC");
-        let usdt = balances.clone().into_iter().find(|c| c.symbol == "USDT");
-
-        let alts_all:Vec<Asset> = balances.clone().into_iter().filter(|c| c.symbol != "USDT" && c.symbol != "BTC").collect();
-        let alts:Vec<Asset> = alts_all.into_iter().filter(|c| c.amount > 0.9).collect();
-
-        Ok(Funds {
-            btc,
-            fiat: balances.clone().into_iter().filter(|c| c.symbol == "USDT").collect(),
-            alts,
-        })
-    }
-
     /// Simple list of balances
     fn balances(&self) -> Result<Vec<Asset>, TrailerError> {
         let result = self.account.get_account()?;
