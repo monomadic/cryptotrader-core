@@ -60,7 +60,7 @@ impl ExchangeAPI for BinanceAPI {
     fn usd_symbol(&self) -> String {
         USD_SYMBOL.into()
     }
-    fn btc_price(&self) -> Result<Pair, TrailerError> {
+    fn btc_price(&self) -> CoreResult<Pair> {
         self.pair("BTCUSDT")
     }
     fn base_pairs(&self) -> Vec<String> {
@@ -71,7 +71,7 @@ impl ExchangeAPI for BinanceAPI {
     }
 
     /// Simple list of balances
-    fn balances(&self) -> Result<Vec<Asset>, TrailerError> {
+    fn balances(&self) -> CoreResult<Vec<Asset>> {
         let result = self.account.get_account()?;
 
         Ok(result
@@ -88,7 +88,7 @@ impl ExchangeAPI for BinanceAPI {
             .collect())
     }
 
-    fn pair(&self, pair: &str) -> Result<Pair, TrailerError> {
+    fn pair(&self, pair: &str) -> CoreResult<Pair> {
         let price = self.market.get_price(pair)?;
         let (symbol, base) = split_symbol_and_base(pair)?;
 
@@ -99,7 +99,7 @@ impl ExchangeAPI for BinanceAPI {
         })
     }
 
-    fn all_pairs(&self) -> Result<Vec<Pair>, TrailerError> {
+    fn all_pairs(&self) -> CoreResult<Vec<Pair>> {
         let binance_api::model::Prices::AllPrices(prices) = self.market.get_all_prices()?;
 
         Ok(prices
@@ -137,13 +137,13 @@ impl ExchangeAPI for BinanceAPI {
         }
     }
 
-    fn limit_buy(&self, symbol: &str, amount: f64, price: f64) -> Result<(), TrailerError> {
+    fn limit_buy(&self, symbol: &str, amount: f64, price: f64) -> CoreResult<()> {
         let result = self.account.limit_buy(symbol, amount, price)?;
         println!("{:?}", result);
         Ok(())
     }
 
-    fn limit_sell(&self, symbol: &str, amount: f64, price: f64) -> Result<(), TrailerError> {
+    fn limit_sell(&self, symbol: &str, amount: f64, price: f64) -> CoreResult<()> {
         let result = self.account.limit_sell(symbol, amount, price)?;
         println!("{:?}", result);
         Ok(())
@@ -155,11 +155,11 @@ impl ExchangeAPI for BinanceAPI {
         amount: f64,
         stop_price: f64,
         limit_price: f64,
-    ) -> Result<(), TrailerError> {
-        Err(TrailerError::unsupported())
+    ) -> CoreResult<()> {
+        Err(Box::new(TrailerError::Unsupported))
     }
 
-    fn open_orders(&self) -> Result<Vec<Order>, TrailerError> {
+    fn open_orders(&self) -> CoreResult<Vec<Order>> {
         Ok(self
             .account
             .get_open_orders_all()?
@@ -174,11 +174,11 @@ impl ExchangeAPI for BinanceAPI {
             .collect())
     }
 
-    fn past_orders(&self) -> Result<Vec<Order>, TrailerError> {
-        Err(TrailerError::unsupported())
+    fn past_orders(&self) -> CoreResult<Vec<Order>> {
+        Err(Box::new(TrailerError::Unsupported))
     }
 
-    fn _trades_for(&self, symbol: &str) -> Result<Vec<Trade>, TrailerError> {
+    fn _trades_for(&self, symbol: &str) -> CoreResult<Vec<Trade>> {
         info!("BINANCE: trades_for({})", symbol);
         Ok(self
             .account
@@ -195,7 +195,7 @@ impl ExchangeAPI for BinanceAPI {
             .collect())
     }
 
-    fn trades_for_pair(&self, pair: Pair) -> Result<Vec<Trade>, TrailerError> {
+    fn trades_for_pair(&self, pair: Pair) -> CoreResult<Vec<Trade>> {
         info!("BINANCE: trades_for({})", self.pair_format(pair.clone()));
         Ok(self
             .account
@@ -212,7 +212,7 @@ impl ExchangeAPI for BinanceAPI {
             .collect())
     }
 
-    fn trades_for(&self, symbol: &str) -> Result<Vec<Order>, TrailerError> {
+    fn trades_for(&self, symbol: &str) -> CoreResult<Vec<Order>> {
         Ok(self
             .account
             .trade_history(symbol)?
@@ -227,7 +227,7 @@ impl ExchangeAPI for BinanceAPI {
             .collect())
     }
 
-    fn chart_data(&self, symbol: &str, interval: &str) -> Result<Vec<Candlestick>, TrailerError> {
+    fn chart_data(&self, symbol: &str, interval: &str) -> CoreResult<Vec<Candlestick>> {
         Ok(self
             .market
             .get_klines(symbol, interval)?
@@ -242,16 +242,6 @@ impl ExchangeAPI for BinanceAPI {
                 number_of_trades: cs.trades as u64,
             })
             .collect())
-    }
-}
-
-use binance_api::errors::Error as BinanceError;
-impl From<BinanceError> for crate::error::TrailerError {
-    fn from(error: BinanceError) -> Self {
-        crate::error::TrailerError {
-            error_type: crate::error::TrailerErrorType::APIError(error.description().to_string()),
-            message: error.description().to_string(),
-        }
     }
 }
 
@@ -273,11 +263,11 @@ pub fn connect(api_key: &str, secret_key: &str) -> BinanceAPI {
 }
 
 // TODO: should be Option
-fn split_symbol_and_base(pair: &str) -> Result<(String, String), TrailerError> {
+fn split_symbol_and_base(pair: &str) -> CoreResult<(String, String)> {
     for base in BASE_PAIRS.iter() {
         if pair.ends_with(base) {
             return Ok((pair.trim_end_matches(base).to_string(), base.to_string()));
         };
     }
-    Err(TrailerError::generic("base pair not found"))
+    Err(Box::new(TrailerError::Generic(format!("base pair not found"))))
 }

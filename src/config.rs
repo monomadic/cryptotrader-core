@@ -20,40 +20,7 @@ pub struct APIConfig {
     pub watch: Option<Vec<String>>,
 }
 
-impl From<::std::io::Error> for TrailerError {
-    fn from(error: ::std::io::Error) -> Self {
-        use std::error::Error;
-
-        TrailerError {
-            error_type: TrailerErrorType::ConfigError,
-            message: format!("cannot read .config.toml: {}", error.description()),
-        }
-    }
-}
-
-impl From<::std::string::FromUtf8Error> for TrailerError {
-    fn from(error: ::std::string::FromUtf8Error) -> Self {
-        use std::error::Error;
-
-        TrailerError {
-            error_type: TrailerErrorType::ConfigError,
-            message: format!("cannot parse .config.toml to UTF8: {}", error.description()),
-        }
-    }
-}
-
-impl From<::toml::de::Error> for TrailerError {
-    fn from(error: ::toml::de::Error) -> Self {
-        use std::error::Error;
-
-        TrailerError {
-            error_type: TrailerErrorType::ConfigError,
-            message: format!("cannot read .config.toml: {}", error.description()),
-        }
-    }
-}
-
-pub fn read() -> Result<Config, TrailerError> {
+pub fn read() -> CoreResult<Config> {
     pub fn file_exists(path: &str) -> bool {
         use std::fs;
 
@@ -63,7 +30,7 @@ pub fn read() -> Result<Config, TrailerError> {
         }
     }
 
-    fn str_from_file_path(path: &str) -> Result<String, TrailerError> {
+    fn str_from_file_path(path: &str) -> CoreResult<String> {
         use std::io::prelude::*;
 
         let mut handle = ::std::fs::File::open(path)?;
@@ -74,7 +41,7 @@ pub fn read() -> Result<Config, TrailerError> {
         Ok(String::from_utf8(bytebuffer)?)
     }
 
-    let home_path = dirs::home_dir().ok_or_else(|| TrailerError::generic("cannot get homedir"))?;
+    let home_path = dirs::home_dir().ok_or_else(|| TrailerError::Generic(format!("cannot get homedir")))?;
 
     // search paths for config files, in order of search preference.
     let search_paths = vec![
@@ -90,5 +57,5 @@ pub fn read() -> Result<Config, TrailerError> {
         }
     };
 
-    Err(TrailerError::generic(&format!("could not find a config file in the following locations: {:?}", search_paths)))
+    Err(Box::new(TrailerError::ConfigError(format!("could not find a config file in the following locations: {:?}", search_paths))))
 }
