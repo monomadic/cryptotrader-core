@@ -186,7 +186,24 @@ impl ExchangeAPI for BinanceAPI {
             .map(|trade| Trade {
                 id: trade.id.to_string(),
                 time: trade.time,
-                pair: self.string_to_pair(symbol.to_string(), 0.0),
+                pair: self.string_to_pair(symbol.to_string(), trade.price),
+                trade_type: TradeType::is_buy(trade.is_buyer),
+                qty: trade.qty,
+                price: trade.price,
+            })
+            .collect())
+    }
+
+    fn trades_for_pair(&self, pair: Pair) -> Result<Vec<Trade>, TrailerError> {
+        info!("BINANCE: trades_for({})", self.pair_format(pair.clone()));
+        Ok(self
+            .account
+            .trade_history(self.pair_format(pair.clone()))?
+            .into_iter()
+            .map(|trade| Trade {
+                id: trade.id.to_string(),
+                time: trade.time,
+                pair: pair.clone(),
                 trade_type: TradeType::is_buy(trade.is_buyer),
                 qty: trade.qty,
                 price: trade.price,

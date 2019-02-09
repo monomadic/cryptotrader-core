@@ -7,6 +7,21 @@ pub struct Pair {
     pub price: f64,
 }
 
+impl Pair {
+    /// This is only a guess, based on the stablecoins out there.
+    pub fn base_is_fiat(&self) -> bool {
+        crate::KNOWN_STABLECOIN_SYMBOLS.contains(&(&*self.base))
+    }
+
+    pub fn base_is_btc(&self) -> bool {
+        crate::KNOWN_BTC_SYMBOLS.contains(&(&*self.base))
+    }
+
+    pub fn base_is_alt(&self) -> bool {
+        !(self.base_is_fiat() || self.base_is_btc())
+    }
+}
+
 pub fn find_all_pairs_by_symbol(symbol: &str, pairs: Vec<Pair>) -> Vec<Pair> {
     pairs
         .into_iter()

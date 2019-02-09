@@ -31,6 +31,7 @@ pub trait ExchangeAPI {
 
     fn trades_for(&self, symbol: &str) -> Result<Vec<Order>, TrailerError>;
     fn _trades_for(&self, symbol: &str) -> Result<Vec<Trade>, TrailerError>;
+    fn trades_for_pair(&self, pair: Pair) -> Result<Vec<Trade>, TrailerError>;
 
     fn chart_data(&self, symbol: &str, interval: &str) -> Result<Vec<Candlestick>, TrailerError>;
 

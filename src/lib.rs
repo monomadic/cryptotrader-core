@@ -33,3 +33,6 @@ pub mod socket {
         PriceChange(String, f64, f64),
     }
 }
+
+pub static KNOWN_STABLECOIN_SYMBOLS: [&str; 3] = ["USDT", "USD", "TUSD"];
+pub static KNOWN_BTC_SYMBOLS: [&str; 2] = ["XBT", "BTC"];
