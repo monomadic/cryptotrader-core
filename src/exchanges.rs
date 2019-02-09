@@ -28,13 +28,20 @@ pub trait ExchangeAPI {
     ) -> Result<(), TrailerError>;
     fn open_orders(&self) -> Result<Vec<Order>, TrailerError>;
     fn past_orders(&self) -> Result<Vec<Order>, TrailerError>;
+
     fn trades_for(&self, symbol: &str) -> Result<Vec<Order>, TrailerError>;
+    fn _trades_for(&self, symbol: &str) -> Result<Vec<Trade>, TrailerError>;
+
     fn chart_data(&self, symbol: &str, interval: &str) -> Result<Vec<Candlestick>, TrailerError>;
+
     fn pair_format(&self, pair: Pair) -> String;
+    fn string_to_pair(&self, pair: String, price: f64) -> Pair;
 
     fn btc_pair(&self, pairs: Vec<Pair>) -> Option<Pair> {
         find_pair_by_symbol_and_base(&self.btc_symbol(), &self.usd_symbol(), pairs)
     }
+
+    fn symbol_and_base_to_pair_format(&self, symbol: &str, base: &str) -> String;
 
     fn usd_pair(&self, pairs: Vec<Pair>) -> Option<Pair> {
         find_pair_by_symbol_and_base(&self.usd_symbol(), &self.btc_symbol(), pairs)

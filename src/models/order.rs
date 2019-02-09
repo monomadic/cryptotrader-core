@@ -10,12 +10,19 @@ pub struct Order {
 }
 
 impl Order {
+    // TODO: get ride of this shit
     pub fn to_trade(&self) -> Trade {
         Trade {
-            cost: self.price,
             qty: self.qty,
-            buy: self.order_type.buy(),
-            // order_type: TradeType,
+            id: self.id.clone(),
+            time: 0.0 as u64,
+            trade_type: self.order_type.clone(),
+            price: self.price,
+            pair: Pair {
+                symbol: self.symbol.clone(),
+                base: self.symbol.clone(),
+                price: self.price,
+            },
         }
     }
 }
@@ -27,11 +34,13 @@ pub fn group_by_price(orders: Vec<Order>) -> Vec<Order> {
     let mut orders = orders.clone();
     if let Some(first_order) = orders.pop() {
         let mut current_order = first_order.clone();
-        
+
         if !orders.is_empty() {
             for order in orders {
                 // println!("checking {}={}, {}={}", order.price, current_order.price, order.order_type, current_order.order_type);
-                if order.price == current_order.price && order.order_type == current_order.order_type {
+                if order.price == current_order.price
+                    && order.order_type == current_order.order_type
+                {
                     // println!("same {:?}", current_order.clone());
                     current_order.qty += order.qty;
                 } else {
@@ -50,18 +59,28 @@ pub fn group_by_price(orders: Vec<Order>) -> Vec<Order> {
 
 #[cfg(test)]
 fn order_fixture(order_type: TradeType, qty: f64, price: f64) -> Order {
-    Order{ id: "".to_string(), symbol: "".to_string(), order_type, qty, price }
+    Order {
+        id: "".to_string(),
+        symbol: "".to_string(),
+        order_type,
+        qty,
+        price,
+    }
 }
 
 #[test]
 fn test_group_by_price_1() {
     fn order_fixture(order_type: TradeType, qty: f64, price: f64) -> Order {
-        Order{ id: "".to_string(), symbol: "".to_string(), order_type, qty, price }
+        Order {
+            id: "".to_string(),
+            symbol: "".to_string(),
+            order_type,
+            qty,
+            price,
+        }
     }
 
-    let orders = group_by_price(vec![
-        order_fixture(TradeType::Buy, 1.0, 100.0),
-    ]);
+    let orders = group_by_price(vec![order_fixture(TradeType::Buy, 1.0, 100.0)]);
 
     assert_eq!(orders.len(), 1);
 
@@ -148,9 +167,10 @@ pub fn group_orders(orders: Vec<Order>) -> Vec<Vec<Order>> {
 }
 
 pub fn average_orders(orders: Vec<Order>) -> Vec<Order> {
-    group_orders(orders).iter().map(|order_group| {
-        average_order(order_group.to_vec())
-    }).collect()
+    group_orders(orders)
+        .iter()
+        .map(|order_group| average_order(order_group.to_vec()))
+        .collect()
 }
 
 pub fn average_order(orders: Vec<Order>) -> Order {
@@ -161,8 +181,8 @@ pub fn average_order(orders: Vec<Order>) -> Order {
 
     // println!("total qty: {}, total price: {}, average_price: {}", total_qty, total_price, average_price);
 
-    first_order.price   = average_price;
-    first_order.qty     = total_qty;
+    first_order.price = average_price;
+    first_order.qty = total_qty;
 
     first_order
 }

@@ -10,18 +10,37 @@ pub struct PositionPresenter {
 
 impl PositionPresenter {
     pub fn new(position: Position, pairs: Vec<Pair>) -> Self {
-        Self {
-            position,
-            pairs,
+        Self { position, pairs }
+    }
+
+    pub fn price_in(&self, symbol: &str) -> Option<f64> {
+        find_pair_by_symbol_and_base(&self.symbol(), symbol, self.pairs.clone()).map(|p| p.price)
+    }
+
+    pub fn value_in(&self, symbol: &str) -> Option<f64> {
+        if let Some(price) = self.price_in(symbol) {
+            Some(price * self.qty())
+        } else {
+            None
         }
     }
 
-    pub fn price_in_btc(&self) -> f64 {
-        find_pair_by_symbol_and_base(&self.symbol(), "BTC", self.pairs.clone()).map(|p| p.price).unwrap_or(0.0)
+    pub fn qty(&self) -> f64 {
+        self.position.wallet_qty
     }
 
+    // delete
+    pub fn price_in_btc(&self) -> f64 {
+        find_pair_by_symbol_and_base(&self.symbol(), "BTC", self.pairs.clone())
+            .map(|p| p.price)
+            .unwrap_or(0.0)
+    }
+
+    // delete
     pub fn price_in_usd(&self) -> f64 {
-        find_pair_by_symbol_and_base(&self.symbol(), "USDT", self.pairs.clone()).map(|p| p.price).unwrap_or(0.0)
+        find_pair_by_symbol_and_base(&self.symbol(), "USDT", self.pairs.clone())
+            .map(|p| p.price)
+            .unwrap_or(66666.0)
     }
 
     pub fn symbol(&self) -> String {
@@ -33,14 +52,25 @@ impl PositionPresenter {
     }
 
     pub fn order_presenters(&self) -> Vec<OrderPresenter> {
-        self.position.orders.clone().into_iter().map(|o|
-            OrderPresenter { order: o, btc_value: self.price_in_usd() }).collect()
+        self.position
+            .orders
+            .clone()
+            .into_iter()
+            .map(|o| OrderPresenter {
+                order: o,
+                btc_value: 55.0,
+            })
+            .collect()
     }
 
+    // pub fn pair_positions(&self) -> Vec<PairPosition> {}
+
+    // delete
     pub fn current_value_in_btc(&self) -> f64 {
         self.position.wallet_qty * self.price_in_btc()
     }
 
+    // delete
     pub fn current_value_in_usd(&self) -> f64 {
         self.current_value_in_btc() * self.price_in_usd()
     }
@@ -51,7 +81,8 @@ impl PositionPresenter {
 
     /// price of remaining units at the current price - those units at buy price
     pub fn unrealised_profit_btc(&self) -> f64 {
-        ((self.price_in_btc() * self.position.remaining_qty()) - (self.position.entry_price() * self.position.remaining_qty()))
+        ((self.price_in_btc() * self.position.remaining_qty())
+            - (self.position.entry_price() * self.position.remaining_qty()))
     }
 
     pub fn unrealised_profit_usd(&self) -> f64 {
@@ -60,8 +91,11 @@ impl PositionPresenter {
 
     pub fn realised_profit_btc(&self) -> f64 {
         if let Some(exit_price) = self.position.exit_price() {
-            ((exit_price * self.position.sell_qty()) - (self.position.entry_price() * self.position.sell_qty()))
-        } else { 0.0 }
+            ((exit_price * self.position.sell_qty())
+                - (self.position.entry_price() * self.position.sell_qty()))
+        } else {
+            0.0
+        }
     }
 
     pub fn realised_profit_usd(&self) -> f64 {
@@ -71,7 +105,9 @@ impl PositionPresenter {
     pub fn realised_profit_percent(&self) -> f64 {
         if let Some(exit_price) = self.position.exit_price() {
             price_percent(self.position.entry_price(), exit_price)
-        } else { 0.0 }
+        } else {
+            0.0
+        }
     }
 }
 
@@ -83,87 +119,17 @@ impl PositionPresenter {
 /// assert_eq!(price_percent(100.0, 50.0), -50.0);
 /// ```
 pub fn price_percent(entry_price: f64, exit_price: f64) -> f64 {
-    if entry_price < exit_price { (100. / entry_price * exit_price) - 100. } else { -(100. + -100. / entry_price * exit_price) }
+    if entry_price < exit_price {
+        (100. / entry_price * exit_price) - 100.
+    } else {
+        -(100. + -100. / entry_price * exit_price)
+    }
 }
 
+// delete
 pub fn total_btc_staked(presenters: Vec<PositionPresenter>) -> f64 {
-    presenters.into_iter().map(|a| a.current_value_in_btc()).sum()
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn order_fixture(order_type: TradeType, qty: f64, price: f64) -> Order {
-        Order { id: "".to_string(), symbol: "".to_string(), order_type, qty, price }
-    }
-
-    fn btc_pair(price: f64) -> Pair {
-        Pair { base: "BTC".to_string(), symbol: "SMUSH".to_string(), price: price }
-    }
-
-    fn usd_pair(price: f64) -> Pair {
-        Pair { base: "USD".to_string(), symbol: "SMUSH".to_string(), price: price }
-    }
-
-    #[test]
-    fn test_position_presenter_state_partial_1() {
-        let position: Vec<Position> = Position::new(vec![
-            order_fixture(TradeType::Buy, 2.0, 100.0), // value: 200
-            order_fixture(TradeType::Sell, 1.0, 100.0), // sold: 100 worth, remaining: 100, profit: 0
-        ]);
-
-        let presenter = PositionPresenter {
-            position: position.first().unwrap().clone(),
-            pairs: vec![usd_pair(110.0), btc_pair(2.0)],
-        };
-
-        assert_eq!(presenter.current_value_in_btc(), 110.0);
-        assert_eq!(presenter.current_value_in_usd(), 220.0);
-        assert_eq!(presenter.percent_change(), 10.0);
-        assert_eq!(presenter.position.buy_qty(), 2.0);
-        assert_eq!(presenter.position.sell_qty(), 1.0);
-        assert_eq!(presenter.position.remaining_qty(), 1.0);
-        assert_eq!(presenter.position.entry_price(), 100.0);
-        assert_eq!(presenter.position.exit_price(), Some(100.0));
-        assert_eq!(presenter.realised_profit_btc(), 0.0);
-        assert_eq!(presenter.unrealised_profit_btc(), 10.0);
-    }
-
-    #[test]
-    fn test_position_presenter_state_partial_2() {
-        let positions: Vec<Position> = Position::new(vec![
-            order_fixture(TradeType::Buy, 2.0, 100.0), // value: 200
-            order_fixture(TradeType::Buy, 2.0, 110.0), // value: 4x105=420, qty: 4
-            order_fixture(TradeType::Sell, 1.0, 150.0), // sold: 1, qty: 3
-        ]);
-        let presenter = PositionPresenter {
-            position: positions.first().unwrap().clone(),
-            pairs: vec![usd_pair(110.0), btc_pair(2.0)],
-        };
-        assert_eq!(presenter.current_value_in_btc(), 330.0);
-        assert_eq!(presenter.current_value_in_usd(), 660.0);
-        assert_eq!(presenter.realised_profit_btc().floor(), 45.0); // current btc value of profit
-        assert_eq!(presenter.unrealised_profit_btc(), 15.0); // 330 possible sale, paid 3x105=315 = 15
-        assert_eq!(presenter.percent_change().floor(), 4.0);
-    }
-
-    #[test]
-    fn test_position_presenter_state_partial_3() {
-        let positions: Vec<Position> = Position::new(vec![
-            order_fixture(TradeType::Buy, 2.0, 100.0), // value: 200
-            order_fixture(TradeType::Buy, 2.0, 110.0), // value: 420, qty: 4
-            order_fixture(TradeType::Sell, 1.0, 150.0), // sold: 1, qty: 3
-            order_fixture(TradeType::Buy, 2.0, 150.0), // bought: 2, qty: 5
-        ]);
-        let presenter = PositionPresenter {
-            position: positions.first().unwrap().clone(),
-            pairs: vec![usd_pair(110.0), btc_pair(2.0)],
-        };
-        assert_eq!(presenter.current_value_in_btc(), 330.0);
-        assert_eq!(presenter.current_value_in_usd(), 660.0);
-        assert_eq!(presenter.realised_profit_btc().floor(), 45.0); // current btc value of profit
-        assert_eq!(presenter.unrealised_profit_btc(), 15.0); // 330 possible sale, paid 3x105=315 = 15
-        assert_eq!(presenter.percent_change().floor(), 4.0);
-    }
+    presenters
+        .into_iter()
+        .map(|a| a.current_value_in_btc())
+        .sum()
 }

@@ -2,6 +2,7 @@
 #![allow(unused_variables)]
 
 use crate::{error::*, exchanges::*, models::*};
+use log::info;
 
 use binance_api::{
     account::*,
@@ -122,6 +123,19 @@ impl ExchangeAPI for BinanceAPI {
         format!("{}{}", pair.symbol, pair.base)
     }
 
+    fn symbol_and_base_to_pair_format(&self, symbol: &str, base: &str) -> String {
+        format!("{}{}", symbol, base)
+    }
+
+    fn string_to_pair(&self, pair: String, price: f64) -> Pair {
+        let (symbol, base) = split_symbol_and_base(&pair).expect("things to work out ok");
+        Pair {
+            symbol,
+            base,
+            price,
+        }
+    }
+
     fn limit_buy(&self, symbol: &str, amount: f64, price: f64) -> Result<(), TrailerError> {
         let result = self.account.limit_buy(symbol, amount, price)?;
         println!("{:?}", result);
@@ -161,6 +175,23 @@ impl ExchangeAPI for BinanceAPI {
 
     fn past_orders(&self) -> Result<Vec<Order>, TrailerError> {
         Err(TrailerError::unsupported())
+    }
+
+    fn _trades_for(&self, symbol: &str) -> Result<Vec<Trade>, TrailerError> {
+        info!("BINANCE: trades_for({})", symbol);
+        Ok(self
+            .account
+            .trade_history(symbol)?
+            .into_iter()
+            .map(|trade| Trade {
+                id: trade.id.to_string(),
+                time: trade.time,
+                pair: self.string_to_pair(symbol.to_string(), 0.0),
+                trade_type: TradeType::is_buy(trade.is_buyer),
+                qty: trade.qty,
+                price: trade.price,
+            })
+            .collect())
     }
 
     fn trades_for(&self, symbol: &str) -> Result<Vec<Order>, TrailerError> {
@@ -223,30 +254,7 @@ pub fn connect(api_key: &str, secret_key: &str) -> BinanceAPI {
     }
 }
 
-impl BinanceAPI {
-    pub fn trades(&self, coin: &str) -> Vec<Trade> {
-        match self.account.trade_history(coin) {
-            Ok(answer) => answer
-                .iter()
-                .map(|trade| {
-                    let cost = trade.price;
-                    let qty = trade.qty;
-
-                    Trade {
-                        cost,
-                        qty,
-                        buy: trade.is_buyer,
-                    }
-                })
-                .collect(),
-            Err(e) => {
-                println!("Error: {}", e);
-                Vec::new()
-            }
-        }
-    }
-}
-
+// TODO: should be Option
 fn split_symbol_and_base(pair: &str) -> Result<(String, String), TrailerError> {
     for base in BASE_PAIRS.iter() {
         if pair.ends_with(base) {
