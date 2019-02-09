@@ -2,6 +2,7 @@
 #![allow(unused_variables)]
 
 use crate::{error::*, exchanges::*, models::*};
+use crate::utils::*;
 use log::info;
 
 use binance_api::{
@@ -185,7 +186,7 @@ impl ExchangeAPI for BinanceAPI {
             .into_iter()
             .map(|trade| Trade {
                 id: trade.id.to_string(),
-                time: trade.time,
+                time: local_datetime_from_unix(trade.time),
                 pair: self.string_to_pair(symbol.to_string(), trade.price),
                 trade_type: TradeType::is_buy(trade.is_buyer),
                 qty: trade.qty,
@@ -202,7 +203,7 @@ impl ExchangeAPI for BinanceAPI {
             .into_iter()
             .map(|trade| Trade {
                 id: trade.id.to_string(),
-                time: trade.time,
+                time: local_datetime_from_unix(trade.time),
                 pair: pair.clone(),
                 trade_type: TradeType::is_buy(trade.is_buyer),
                 qty: trade.qty,

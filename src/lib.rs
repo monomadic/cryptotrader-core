@@ -2,6 +2,7 @@ pub mod config;
 pub mod error;
 pub mod exchanges;
 pub mod threadpool;
+pub(crate) mod utils;
 
 pub mod models {
     mod asset; pub use self::asset::*;

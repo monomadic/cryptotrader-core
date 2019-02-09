@@ -1,4 +1,5 @@
 use crate::models::*;
+use crate::utils::*;
 
 #[derive(Debug, Clone)]
 pub struct Order {
@@ -15,7 +16,7 @@ impl Order {
         Trade {
             qty: self.qty,
             id: self.id.clone(),
-            time: 0.0 as u64,
+            time: local_datetime_from_unix(0),
             trade_type: self.order_type.clone(),
             price: self.price,
             pair: Pair {

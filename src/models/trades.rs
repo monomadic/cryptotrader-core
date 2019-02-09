@@ -1,4 +1,5 @@
 use crate::models::*;
+use chrono::{prelude::DateTime, offset::Local};
 
 #[derive(Debug, Clone)]
 pub struct Trade {
@@ -7,14 +8,17 @@ pub struct Trade {
     pub trade_type: TradeType,
     pub price: f64,
     pub qty: f64,
-    pub time: u64,
+    pub time: DateTime<Local>,
 }
 
 impl Trade {
+
+    /// what the trade cost when bought/sold
     pub fn cost(&self) -> f64 {
         self.price * self.qty
     }
 
+    /// the current value of the trade
     pub fn value(&self) -> f64 {
         self.pair.price * self.qty
     }

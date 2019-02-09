@@ -317,6 +317,7 @@ name = "cryptotrader"
 version = "0.1.0"
 dependencies = [
  "binance 0.2.0 (git+https://github.com/robsaunders/binance-rs.git)",
+ "chrono 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "dirs 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "math 0.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
