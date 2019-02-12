@@ -1,8 +1,8 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use crate::{error::*, exchanges::*, models::*};
 use crate::utils::*;
+use crate::{error::*, exchanges::*, models::*};
 use log::info;
 
 use binance_api::{
@@ -191,6 +191,8 @@ impl ExchangeAPI for BinanceAPI {
                 trade_type: TradeType::is_buy(trade.is_buyer),
                 qty: trade.qty,
                 price: trade.price,
+                fee: trade.commission.parse::<f64>().unwrap_or(0.0),
+                fee_symbol: Some(trade.commission_asset),
             })
             .collect())
     }
@@ -208,6 +210,8 @@ impl ExchangeAPI for BinanceAPI {
                 trade_type: TradeType::is_buy(trade.is_buyer),
                 qty: trade.qty,
                 price: trade.price,
+                fee: trade.commission.parse::<f64>().unwrap_or(0.0),
+                fee_symbol: Some(trade.commission_asset),
             })
             .collect())
     }
@@ -269,5 +273,7 @@ fn split_symbol_and_base(pair: &str) -> CoreResult<(String, String)> {
             return Ok((pair.trim_end_matches(base).to_string(), base.to_string()));
         };
     }
-    Err(Box::new(TrailerError::Generic(format!("base pair not found"))))
+    Err(Box::new(TrailerError::Generic(format!(
+        "base pair not found"
+    ))))
 }

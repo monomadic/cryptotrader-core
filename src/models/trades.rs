@@ -1,5 +1,5 @@
 use crate::models::*;
-use chrono::{prelude::DateTime, offset::Local};
+use chrono::{offset::Local, prelude::DateTime};
 
 #[derive(Debug, Clone)]
 pub struct Trade {
@@ -9,10 +9,11 @@ pub struct Trade {
     pub price: f64,
     pub qty: f64,
     pub time: DateTime<Local>,
+    pub fee: f64,
+    pub fee_symbol: Option<String>,
 }
 
 impl Trade {
-
     /// what the trade cost when bought/sold
     pub fn cost(&self) -> f64 {
         self.price * self.qty
@@ -53,29 +54,26 @@ pub fn average_cost(trades: Vec<Trade>) -> f64 {
     average / sum_qty(trades)
 }
 
-// /// average together buys and sells into 1 reduction each
-// pub fn average_trades(trades: Vec<Trade>) -> Vec<Trade> {
-//     let mut grouped_trades = Vec::new();
-//     let mut current_trade = Trade {
-//         cost: trades.first().unwrap().price,
-//         qty: 0.0,
-//         buy: trades.first().unwrap().buy,
-//     };
+/// average together buys and sells
+pub fn average_trades(trades: Vec<Trade>) -> Vec<Trade> {
+    let mut grouped_trades = Vec::new();
 
-//     for trade in trades.clone() {
-//         if trade.buy == current_trade.buy {
-//             current_trade.cost = ((trade.cost * trade.qty)
-//                 + (current_trade.cost * current_trade.qty))
-//                 / (trade.qty + current_trade.qty);
-//             current_trade.qty += trade.qty;
-//         } else {
-//             grouped_trades.push(current_trade.clone());
-//             current_trade = trade.clone();
-//         }
-//     }
-//     grouped_trades.push(current_trade.clone());
-//     grouped_trades
-// }
+    let mut current_trade: Trade = trades.first().cloned().unwrap();
+    current_trade.qty = 0.0;
+
+    for trade in trades.clone() {
+        if trade.trade_type == current_trade.trade_type {
+            current_trade.price =
+                trade.cost() + current_trade.cost() / trade.qty + current_trade.qty;
+            current_trade.qty += trade.qty;
+        } else {
+            grouped_trades.push(current_trade.clone());
+            current_trade = trade.clone();
+        }
+    }
+    grouped_trades.push(current_trade.clone());
+    grouped_trades
+}
 
 // pub fn averaged_trade(trades: Vec<Trade>) -> Trade {
 //     Trade {
@@ -85,26 +83,24 @@ pub fn average_cost(trades: Vec<Trade>) -> f64 {
 //     }
 // }
 
-// // group trades into buys and sells
-// pub fn group_trades(trades: Vec<Trade>) -> Vec<Trade> {
-//     let mut grouped_trades = Vec::new();
-//     let mut current_trade = Trade {
-//         cost: trades.first().unwrap().cost,
-//         qty: 0.0,
-//         buy: trades.first().unwrap().buy,
-//     };
+/// group trades with the same price together
+pub fn group_trades(trades: Vec<Trade>) -> Vec<Trade> {
+    let mut grouped_trades = Vec::new();
+    let mut current_trade: Trade = trades.first().cloned().unwrap();
+    current_trade.qty = 0.0;
 
-//     for trade in trades.clone() {
-//         if trade.cost == current_trade.cost && trade.buy == current_trade.buy {
-//             current_trade.qty += trade.qty;
-//         } else {
-//             grouped_trades.push(current_trade.clone());
-//             current_trade = trade.clone();
-//         }
-//     }
-//     grouped_trades.push(current_trade.clone());
-//     grouped_trades
-// }
+    for trade in trades.clone() {
+        if trade.price == current_trade.price && trade.trade_type == current_trade.trade_type {
+            current_trade.qty += trade.qty;
+        } else {
+            grouped_trades.push(current_trade.clone());
+            current_trade = trade.clone();
+        }
+    }
+
+    grouped_trades.push(current_trade.clone());
+    grouped_trades
+}
 
 // #[cfg(test)]
 // mod tests {

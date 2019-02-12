@@ -24,6 +24,8 @@ impl Order {
                 base: self.symbol.clone(),
                 price: self.price,
             },
+            fee: 0.0,
+            fee_symbol: None,
         }
     }
 }
