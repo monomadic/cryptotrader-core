@@ -63,8 +63,7 @@ pub fn average_trades(trades: Vec<Trade>) -> Vec<Trade> {
 
     for trade in trades.clone() {
         if trade.trade_type == current_trade.trade_type {
-            current_trade.price =
-                trade.cost() + current_trade.cost() / trade.qty + current_trade.qty;
+            current_trade.price = trade.price + current_trade.price / trade.qty + current_trade.qty;
             current_trade.qty += trade.qty;
         } else {
             grouped_trades.push(current_trade.clone());
