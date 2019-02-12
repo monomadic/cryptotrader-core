@@ -1,10 +1,8 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use std::{ fmt, fmt::Display, error::Error };
-
-// pub type CoreResult<T> = Result<T, TrailerError>;
-pub type CoreResult<T> = Result<T,Box<std::error::Error>>;
+use std::{error::Error, fmt, fmt::Display};
+pub type CoreResult<T> = Result<T, Box<std::error::Error>>;
 
 #[derive(Debug)]
 pub enum TrailerError {
@@ -18,7 +16,9 @@ pub enum TrailerError {
 }
 
 impl Error for TrailerError {
-    fn description(&self) -> &str { "TrailerError" }
+    fn description(&self) -> &str {
+        "TrailerError"
+    }
 }
 
 impl Display for TrailerError {

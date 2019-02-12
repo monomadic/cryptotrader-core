@@ -29,6 +29,7 @@ pub trait ExchangeAPI {
     fn open_orders(&self) -> CoreResult<Vec<Order>>;
     fn past_orders(&self) -> CoreResult<Vec<Order>>;
 
+    // TODO remove
     fn trades_for(&self, symbol: &str) -> CoreResult<Vec<Order>>;
     fn _trades_for(&self, symbol: &str) -> CoreResult<Vec<Trade>>;
     fn trades_for_pair(&self, pair: Pair) -> CoreResult<Vec<Trade>>;
