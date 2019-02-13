@@ -1,7 +1,27 @@
 #![allow(dead_code)]
+use chrono::prelude::DateTime;
+use chrono::Local;
 use cryptotrader::models::*;
+use std::time::UNIX_EPOCH;
 
 pub static DEFAULT_SYMBOL_1: &str = "SMOSH";
+
+pub fn trade_fixture(trade_type: TradeType, price: f64, current_price: f64, qty: f64) -> Trade {
+    Trade {
+        id: "id".to_string(),
+        pair: Pair {
+            symbol: DEFAULT_SYMBOL_1.to_string(),
+            base: "BASE".to_string(),
+            price: current_price,
+        },
+        trade_type,
+        price,
+        qty,
+        time: DateTime::<Local>::from(UNIX_EPOCH),
+        fee: 0.1,
+        fee_symbol: None,
+    }
+}
 
 pub fn order_fixture(order_type: TradeType, qty: f64, price: f64) -> Order {
     Order {

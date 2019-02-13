@@ -16,12 +16,20 @@ pub struct Trade {
 impl Trade {
     /// what the trade cost when bought/sold
     pub fn cost(&self) -> f64 {
-        self.price * self.qty
+        self.qty * self.price
     }
 
     /// the current value of the trade
     pub fn value(&self) -> f64 {
-        self.pair.price * self.qty
+        self.qty * self.pair.price
+    }
+
+    pub fn profit(&self) -> f64 {
+        self.value() - self.cost()
+    }
+
+    pub fn profit_as_percent(&self) -> f64 {
+        100.0 / self.cost() * self.profit()
     }
 }
 
@@ -74,6 +82,37 @@ pub fn average_trades(trades: Vec<Trade>) -> Vec<Trade> {
     grouped_trades
 }
 
+/// group trades into buy-sell buy-sell buy-sell
+pub fn group_trades_by_positions(trades: Vec<Trade>) -> Vec<(Vec<Trade>)> {
+    let mut positions = Vec::new();
+    let mut current_trades: Vec<Trade> = Vec::new();
+    let mut trades: Vec<Trade> = trades.into_iter().rev().collect();
+
+    while let Some(last_trade) = trades.pop() {
+        match last_trade.trade_type {
+            TradeType::Buy => {
+                // if the list contains sells, and we've encountered a buy, lets toss it
+                if current_trades
+                    .clone()
+                    .into_iter()
+                    .filter(|o| o.trade_type == TradeType::Sell)
+                    .collect::<Vec<Trade>>()
+                    .len()
+                    > 0
+                {
+                    positions.push(current_trades.clone());
+                    current_trades = Vec::new();
+                }
+            }
+            TradeType::Sell => {}
+        }
+        current_trades.push(last_trade.clone());
+    }
+
+    positions.push(current_trades.clone());
+    positions
+}
+
 // pub fn averaged_trade(trades: Vec<Trade>) -> Trade {
 //     Trade {
 //         cost: 0.1,
@@ -83,7 +122,7 @@ pub fn average_trades(trades: Vec<Trade>) -> Vec<Trade> {
 // }
 
 /// group trades with the same price together
-pub fn group_trades(trades: Vec<Trade>) -> Vec<Trade> {
+pub fn group_trades_by_price(trades: Vec<Trade>) -> Vec<Trade> {
     let mut grouped_trades = Vec::new();
     let mut current_trade: Trade = trades.first().cloned().unwrap();
     current_trade.qty = 0.0;

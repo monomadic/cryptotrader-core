@@ -178,27 +178,14 @@ impl ExchangeAPI for BinanceAPI {
         Err(Box::new(TrailerError::Unsupported))
     }
 
-    fn _trades_for(&self, symbol: &str) -> CoreResult<Vec<Trade>> {
+    fn trades_for(&self, symbol: &str) -> CoreResult<Vec<Trade>> {
         info!("BINANCE: trades_for({})", symbol);
-        Ok(self
-            .account
-            .trade_history(symbol)?
-            .into_iter()
-            .map(|trade| Trade {
-                id: trade.id.to_string(),
-                time: local_datetime_from_unix(trade.time),
-                pair: self.string_to_pair(symbol.to_string(), trade.price),
-                trade_type: TradeType::is_buy(trade.is_buyer),
-                qty: trade.qty,
-                price: trade.price,
-                fee: trade.commission.parse::<f64>().unwrap_or(0.0),
-                fee_symbol: Some(trade.commission_asset),
-            })
-            .collect())
+        // self.trades_for_pair(symbol);
+        panic!("unsupported");
     }
 
     fn trades_for_pair(&self, pair: Pair) -> CoreResult<Vec<Trade>> {
-        info!("BINANCE: trades_for({})", self.pair_format(pair.clone()));
+        info!("BINANCE: trades_for_pair({:?})", pair);
         Ok(self
             .account
             .trade_history(self.pair_format(pair.clone()))?
@@ -216,20 +203,20 @@ impl ExchangeAPI for BinanceAPI {
             .collect())
     }
 
-    fn trades_for(&self, symbol: &str) -> CoreResult<Vec<Order>> {
-        Ok(self
-            .account
-            .trade_history(symbol)?
-            .into_iter()
-            .map(|order| Order {
-                id: order.id.to_string(),
-                symbol: symbol.to_string(),
-                order_type: TradeType::is_buy(order.is_buyer),
-                qty: order.qty,
-                price: order.price,
-            })
-            .collect())
-    }
+    // fn trades_for(&self, symbol: &str) -> CoreResult<Vec<Order>> {
+    //     Ok(self
+    //         .account
+    //         .trade_history(symbol)?
+    //         .into_iter()
+    //         .map(|order| Order {
+    //             id: order.id.to_string(),
+    //             symbol: symbol.to_string(),
+    //             order_type: TradeType::is_buy(order.is_buyer),
+    //             qty: order.qty,
+    //             price: order.price,
+    //         })
+    //         .collect())
+    // }
 
     fn chart_data(&self, symbol: &str, interval: &str) -> CoreResult<Vec<Candlestick>> {
         Ok(self

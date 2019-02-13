@@ -6,6 +6,8 @@ use crate::presenters::*;
 pub struct PositionPresenter {
     pub position: Position,
     pub pairs: Vec<Pair>,
+    // pub btc_pair: Pair,
+    // pub usd_pair: Pair,
 }
 
 impl PositionPresenter {
@@ -40,7 +42,7 @@ impl PositionPresenter {
     pub fn price_in_usd(&self) -> f64 {
         find_pair_by_symbol_and_base(&self.symbol(), "USDT", self.pairs.clone())
             .map(|p| p.price)
-            .unwrap_or(66666.0)
+            .unwrap_or(0.0)
     }
 
     pub fn symbol(&self) -> String {
@@ -51,23 +53,23 @@ impl PositionPresenter {
         self.position.remaining_qty() == self.position.wallet_qty
     }
 
-    pub fn order_presenters(&self) -> Vec<OrderPresenter> {
-        self.position
-            .orders
-            .clone()
-            .into_iter()
-            .map(|o| OrderPresenter {
-                order: o,
-                btc_value: 55.0,
-            })
-            .collect()
-    }
+    // pub fn order_presenters(&self) -> Vec<OrderPresenter> {
+    //     self.position
+    //         .trades
+    //         .clone()
+    //         .into_iter()
+    //         .map(|t| OrderPresenter {
+    //             order: t,
+    //             btc_value: 55.0,
+    //         })
+    //         .collect()
+    // }
 
     // pub fn pair_positions(&self) -> Vec<PairPosition> {}
 
     // delete
     pub fn current_value_in_btc(&self) -> f64 {
-        self.position.wallet_qty * self.price_in_btc()
+        self.qty() * self.price_in_btc()
     }
 
     // delete
