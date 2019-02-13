@@ -1,6 +1,6 @@
 use crate::models::*;
 use crate::presenters::*;
-// use crate::error::*;
+use crate::utils::*;
 
 #[derive(Debug, Clone)]
 pub struct PositionPresenter {
@@ -110,21 +110,6 @@ impl PositionPresenter {
         } else {
             0.0
         }
-    }
-}
-
-/// Expresses the difference as a percentage between two floats.
-///
-/// ```rust
-/// use cryptotrader::presenters::price_percent;
-/// assert_eq!(price_percent(5.0, 10.0), 100.0);
-/// assert_eq!(price_percent(100.0, 50.0), -50.0);
-/// ```
-pub fn price_percent(entry_price: f64, exit_price: f64) -> f64 {
-    if entry_price < exit_price {
-        (100. / entry_price * exit_price) - 100.
-    } else {
-        -(100. + -100. / entry_price * exit_price)
     }
 }
 

@@ -38,6 +38,13 @@ pub fn find_pair_by_symbol_and_base(symbol: &str, base: &str, pairs: Vec<Pair>) 
 type PairMap = HashMap<String, Vec<Pair>>;
 use std::collections::HashMap;
 
+pub fn average_pairs(pairs: Vec<Pair>) -> Pair {
+    let mut pair = pairs.first().cloned().unwrap();
+    let total_price: f64 = pairs.clone().into_iter().map(|p| p.price).sum();
+    pair.price = total_price / pairs.len() as f64;
+    pair
+}
+
 pub fn sort_pairs(pairs: Vec<Pair>) -> PairMap {
     let mut pairs_by_symbol: PairMap = HashMap::new();
 

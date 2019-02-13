@@ -29,7 +29,7 @@ impl ::std::fmt::Display for PositionState {
 
 impl Position {
     pub fn new(trades: Vec<Trade>, qty: f64) -> Vec<Position> {
-        group_trades_by_positions(trades)
+        group_trades_by_trade_type(trades)
             .into_iter()
             .map(|trade_group| Position {
                 trades: trade_group,
@@ -145,14 +145,6 @@ pub fn derive_state(buy_qty: f64, sell_qty: f64) -> PositionState {
         return PositionState::Partial;
     };
     PositionState::Irreconciled
-}
-
-pub fn price_percent(entry_price: f64, exit_price: f64) -> f64 {
-    if entry_price < exit_price {
-        (100. / entry_price * exit_price) - 100.
-    } else {
-        -(100. + -100. / entry_price * exit_price)
-    }
 }
 
 // mod tests {

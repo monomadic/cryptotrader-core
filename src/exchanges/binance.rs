@@ -186,9 +186,11 @@ impl ExchangeAPI for BinanceAPI {
 
     fn trades_for_pair(&self, pair: Pair) -> CoreResult<Vec<Trade>> {
         info!("BINANCE: trades_for_pair({:?})", pair);
-        Ok(self
-            .account
-            .trade_history(self.pair_format(pair.clone()))?
+
+        let result = self.account.trade_history(self.pair_format(pair.clone()))?;
+        info!("result: {:#?}", result);
+
+        Ok(result
             .into_iter()
             .map(|trade| Trade {
                 id: trade.id.to_string(),
