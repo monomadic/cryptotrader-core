@@ -39,7 +39,12 @@ impl Position {
     }
 
     pub fn symbol(&self) -> String {
-        self.trades.first().unwrap().pair.symbol.clone()
+        self.trades
+            .first()
+            .expect("symbol to be present")
+            .pair
+            .symbol
+            .clone()
     }
 
     pub fn entry_price(&self) -> f64 {

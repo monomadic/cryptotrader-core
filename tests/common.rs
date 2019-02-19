@@ -4,6 +4,9 @@ use chrono::Local;
 use cryptotrader::models::*;
 use std::time::UNIX_EPOCH;
 
+pub static DEFAULT_SYMBOL: &str = "SMOSH";
+pub static DEFAULT_FIAT: &str = "FIAT";
+
 pub static DEFAULT_SYMBOL_1: &str = "SMOSH";
 
 pub fn trade_fixture(trade_type: TradeType, price: f64, current_price: f64, qty: f64) -> Trade {

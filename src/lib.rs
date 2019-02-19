@@ -25,8 +25,9 @@ pub mod presenters {
     mod asset;
     mod order;
     mod position;
+    mod trade_presenter;
 
-    pub use self::{asset::*, order::*, position::*};
+    pub use self::{asset::*, order::*, position::*, trade_presenter::*};
 }
 
 pub mod indicators {

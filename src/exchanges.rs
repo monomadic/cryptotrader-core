@@ -31,7 +31,7 @@ pub trait ExchangeAPI {
 
     // TODO remove
     // fn trades_for(&self, symbol: &str) -> CoreResult<Vec<Order>>;
-    fn trades_for(&self, symbol: &str) -> CoreResult<Vec<Trade>>;
+    // fn trades_for(&self, symbol: &str) -> CoreResult<Vec<Trade>>;
     fn trades_for_pair(&self, pair: Pair) -> CoreResult<Vec<Trade>>;
 
     fn chart_data(&self, symbol: &str, interval: &str) -> CoreResult<Vec<Candlestick>>;
@@ -47,6 +47,16 @@ pub trait ExchangeAPI {
 
     fn usd_pair(&self, pairs: Vec<Pair>) -> Option<Pair> {
         find_pair_by_symbol_and_base(&self.usd_symbol(), &self.btc_symbol(), pairs)
+    }
+
+    // TODO: introduce client caching for pairs
+    fn fiat_pair_for(&self, symbol: &str, pairs: Vec<Pair>) -> Option<Pair> {
+        find_pair_by_symbol_and_base(symbol, &self.usd_symbol(), pairs)
+        // if Some(pair) = find_pair_by_symbol_and_base(&self.usd_symbol(), &self.btc_symbol(), pairs) {
+        //     pair
+        // } else {
+        //     find_pair_by_symbol_and_base(&self.usd_symbol(), &self.btc_symbol(), pairs)
+        // }
     }
 }
 

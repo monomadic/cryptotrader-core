@@ -63,6 +63,10 @@ impl ExchangeAPI for BinanceAPI {
     fn btc_price(&self) -> CoreResult<Pair> {
         self.pair("BTCUSDT")
     }
+    // fn btc_pair(&self, pairs: Vec<Pair>) -> Option<Pair> {
+    //     find_pair_by_symbol_and_base(BTC_SYMBOL.into(), USD_SYMBOL.into(), pairs)
+    // }
+
     fn base_pairs(&self) -> Vec<String> {
         BASE_PAIRS
             .into_iter()
@@ -73,8 +77,7 @@ impl ExchangeAPI for BinanceAPI {
     /// Simple list of balances
     fn balances(&self) -> CoreResult<Vec<Asset>> {
         let result = self.account.get_account()?;
-
-        Ok(result
+        let assets: Vec<Asset> = result
             .balances
             .into_iter()
             .map(|balance| Asset {
@@ -85,7 +88,19 @@ impl ExchangeAPI for BinanceAPI {
                 exchange: Exchange::Binance,
             })
             .filter(|b| b.amount > 0.0)
-            .collect())
+            .collect();
+
+        info!(
+            "response: found assets: {}",
+            assets
+                .clone()
+                .into_iter()
+                .map(|p| p.symbol)
+                .collect::<Vec<String>>()
+                .join(", ")
+        );
+
+        Ok(assets)
     }
 
     fn pair(&self, pair: &str) -> CoreResult<Pair> {
@@ -178,17 +193,17 @@ impl ExchangeAPI for BinanceAPI {
         Err(Box::new(TrailerError::Unsupported))
     }
 
-    fn trades_for(&self, symbol: &str) -> CoreResult<Vec<Trade>> {
-        info!("BINANCE: trades_for({})", symbol);
-        // self.trades_for_pair(symbol);
-        panic!("unsupported");
-    }
+    // fn trades_for(&self, symbol: &str) -> CoreResult<Vec<Trade>> {
+    //     info!("BINANCE: trades_for({})", symbol);
+    //     // self.trades_for_pair(symbol);
+    //     panic!("unsupported");
+    // }
 
     fn trades_for_pair(&self, pair: Pair) -> CoreResult<Vec<Trade>> {
-        info!("BINANCE: trades_for_pair({:?})", pair);
+        info!("BINANCE: trades_for_pair({})", self.pair_format(pair.clone()));
 
         let result = self.account.trade_history(self.pair_format(pair.clone()))?;
-        info!("result: {:#?}", result);
+        info!("result: {} entries.", result.len());
 
         Ok(result
             .into_iter()

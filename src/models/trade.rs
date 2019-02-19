@@ -15,32 +15,61 @@ pub struct Trade {
 }
 
 impl Trade {
+    pub fn entry_price(&self) -> f64 {
+        self.price
+    }
+
     /// what the trade cost when bought/sold
-    // TODO: RENAME TO ENTRY_COST
-    pub fn cost(&self) -> f64 {
+    pub fn entry_cost(&self) -> f64 {
         self.qty * self.price
     }
 
     /// the current value of the trade
-    // TODO: RENAME TO CURRENT_COST
-    pub fn value(&self) -> f64 {
+    pub fn current_cost(&self) -> f64 {
         self.qty * self.pair.price
     }
 
-    // TODO: RENAME TO CURRENT_PROFIT
-    pub fn profit(&self) -> f64 {
-        match self.trade_type {
-            TradeType::Buy => self.value() - self.cost(),
-            TradeType::Sell => 0.0 - self.value() - self.cost(),
-        }
+    pub fn current_profit(&self) -> f64 {
+        self.current_cost() - self.entry_cost()
+        // match self.trade_type {
+        //     TradeType::Buy => self.current_cost() - self.entry_cost(),
+        //     TradeType::Sell => 0.0 - self.current_cost() - self.entry_cost(),
+        // }
     }
 
-    pub fn profit_as_percent(&self) -> f64 {
-        price_percent(self.cost(), self.value())
+    pub fn current_profit_as_percent(&self) -> f64 {
+        // log::info!("{} {}, {}", self.trade_type, self.entry_price(), self.current_price());
+        price_percent(self.entry_price(), self.current_price())
     }
 
     pub fn current_price(&self) -> f64 {
         self.pair.price
+    }
+
+    pub fn purchase_price(&self) -> f64 {
+        self.price
+    }
+
+    // ------------------------------------------------------------------------------------------
+
+    // TODO ALIAS - delete
+    pub fn profit_as_percent(&self) -> f64 {
+        self.current_profit_as_percent()
+    }
+
+    // TODO ALIAS - delete
+    pub fn cost(&self) -> f64 {
+        self.entry_cost()
+    }
+
+    // TODO ALIAS - delete
+    pub fn value(&self) -> f64 {
+        self.current_cost()
+    }
+
+    // TODO ALIAS - delete
+    pub fn profit(&self) -> f64 {
+        self.current_profit()
     }
 }
 
@@ -110,6 +139,11 @@ pub fn average_trades(trades: Vec<Trade>) -> Trade {
 pub fn group_trades_by_trade_type(trades: Vec<Trade>) -> Vec<Vec<Trade>> {
     let mut trade_group: Vec<Trade> = Vec::new();
     let mut grouped_trades: Vec<Vec<Trade>> = Vec::new();
+
+    if trades.is_empty() {
+        return grouped_trades;
+    }
+
     let mut current_trade_type: TradeType = trades.first().unwrap().trade_type;
     let mut ungrouped_trades: Vec<Trade> = trades.into_iter().rev().collect();
 
@@ -129,7 +163,7 @@ pub fn group_trades_by_trade_type(trades: Vec<Trade>) -> Vec<Vec<Trade>> {
 }
 
 /// group trades into buy-sell buy-sell buy-sell
-pub fn group_trades_by_trade_type_pair(trades: Vec<Trade>) -> Vec<(Vec<Trade>)> {
+pub fn group_trades_by_trade_type_pair(trades: Vec<Trade>) -> Vec<Vec<Trade>> {
     let mut positions = Vec::new();
     let mut current_trades: Vec<Trade> = Vec::new();
     let mut trades: Vec<Trade> = trades.into_iter().rev().collect();

@@ -7,8 +7,25 @@ pub struct Pair {
     pub price: f64,
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum AssetType {
+    Fiat,
+    Bitcoin,
+    Altcoin,
+}
+
 impl Pair {
     /// This is only a guess, based on the stablecoins out there.
+    pub fn base_type(&self) -> AssetType {
+        if self.base_is_fiat() {
+            AssetType::Fiat
+        } else if self.base_is_btc() {
+            AssetType::Bitcoin
+        } else {
+            AssetType::Altcoin
+        }
+    }
+
     pub fn base_is_fiat(&self) -> bool {
         crate::KNOWN_STABLECOIN_SYMBOLS.contains(&(&*self.base))
     }
@@ -71,3 +88,41 @@ pub fn filter_pairmap_by_symbols(pairs: PairMap, symbols: Vec<&str>) -> PairMap 
         })
         .collect()
 }
+
+pub fn convert_currency(amount: f64, from: Pair, to: Pair) -> Option<f64> {
+    Some((from.price / to.price) * amount)
+    // if from.symbol == to.symbol {
+    //     Some((from.price / to.price) * amount)
+    // } else {
+    //     None
+    // }
+}
+
+// pub fn convert_currency_via(amount: f64, from: Pair, to: Pair, via: Pair) -> Option<f64> {
+//     // let from_currency = from.price;
+//     // let to_currency = via.price;
+//     // let via_currency = via.price;
+
+//     // if from.symbol == to.symbol {
+//     //     Some((from.price / to.price) * amount)
+//     // } else {
+//     //     None
+//     // }
+
+//     Some(from.price / to.price / via.price)
+// }
+
+// pub fn price_in(symbol: &str, base: &str, pairs: Vec<Pair>) -> Option<f64> {
+
+//     if let symbol = find_pair_by_symbol_and_base(symbol, base)
+
+//     let source_pairs = find_all_pairs_by_symbol(symbol);
+
+//     let pairmap = sort_pairs(pairs);
+
+//     if let Some(pair) = orders.entry(symbol) {
+
+//     } else {
+
+//     }
+// }

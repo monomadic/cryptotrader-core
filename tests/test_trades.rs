@@ -5,6 +5,38 @@ mod common;
 
 // trade_fixture(trade_type: TradeType, price: f64, current_price: f64, qty: f64);
 
+fn trade_fixture_1() -> Trade {
+    trade_fixture(TradeType::Buy, 0.00000689, 0.00000694, 58023.0)
+}
+
+fn trade_fixture_2() -> Trade {
+    trade_fixture(TradeType::Buy, 1.0, 2.0, 2.0)
+}
+
+fn trade_fixture_3() -> Trade {
+    trade_fixture(TradeType::Buy, 2.0, 1.0, 1.0)
+}
+
+fn trade_fixture_4() -> Trade {
+    trade_fixture(TradeType::Sell, 2.0, 1.0, 1.0)
+}
+
+#[test]
+fn trade_current_profit() {
+    assert_eq!(trade_fixture_1().current_profit(), 0.0029011499999999635);
+    assert_eq!(trade_fixture_2().current_profit(), 2.0);
+    assert_eq!(trade_fixture_3().current_profit(), -1.0);
+    assert_eq!(trade_fixture_4().current_profit(), -1.0);
+}
+
+#[test]
+fn trade_current_profit_as_percent() {
+    assert_eq!(trade_fixture_1().current_profit_as_percent(), 0.725689404934684);
+    assert_eq!(trade_fixture_2().current_profit_as_percent(), 100.0);
+    assert_eq!(trade_fixture_3().current_profit_as_percent(), -50.0);
+    assert_eq!(trade_fixture_4().current_profit_as_percent(), -50.0);
+}
+
 #[test]
 fn trade_works_with_one_entry() {
     let trade = trade_fixture(TradeType::Buy, 100.0, 150.0, 5.0);
