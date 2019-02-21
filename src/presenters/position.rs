@@ -8,13 +8,10 @@ pub struct PositionPresenter {
     pub pairs: Vec<Pair>,
     // pub btc_pair: Pair,
     // pub usd_pair: Pair,
+    pub btc_price_in_usd: f64,
 }
 
 impl PositionPresenter {
-    pub fn new(position: Position, pairs: Vec<Pair>) -> Self {
-        Self { position, pairs }
-    }
-
     pub fn price_in(&self, symbol: &str) -> Option<f64> {
         find_pair_by_symbol_and_base(&self.symbol(), symbol, self.pairs.clone()).map(|p| p.price)
     }
@@ -28,7 +25,7 @@ impl PositionPresenter {
     }
 
     pub fn qty(&self) -> f64 {
-        self.position.wallet_qty
+        self.position.asset.amount
     }
 
     // delete
@@ -50,7 +47,7 @@ impl PositionPresenter {
     }
 
     pub fn is_valid(&self) -> bool {
-        self.position.remaining_qty() == self.position.wallet_qty
+        self.position.remaining_qty() == self.position.asset.amount
     }
 
     // pub fn order_presenters(&self) -> Vec<OrderPresenter> {
@@ -74,7 +71,7 @@ impl PositionPresenter {
 
     // delete
     pub fn current_value_in_usd(&self) -> f64 {
-        self.current_value_in_btc() * self.price_in_usd()
+        self.current_value_in_btc() * self.btc_price_in_usd
     }
 
     pub fn percent_change(&self) -> f64 {
@@ -88,7 +85,7 @@ impl PositionPresenter {
     }
 
     pub fn unrealised_profit_usd(&self) -> f64 {
-        self.unrealised_profit_btc() * self.price_in_usd()
+        self.unrealised_profit_btc() * self.btc_price_in_usd
     }
 
     pub fn realised_profit_btc(&self) -> f64 {

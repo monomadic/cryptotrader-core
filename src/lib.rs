@@ -23,11 +23,12 @@ pub mod models {
 
 pub mod presenters {
     mod asset;
+    mod balance;
     mod order;
     mod position;
     mod trade_presenter;
 
-    pub use self::{asset::*, order::*, position::*, trade_presenter::*};
+    pub use self::{asset::*, balance::*, order::*, position::*, trade_presenter::*};
 }
 
 pub mod indicators {

@@ -95,7 +95,7 @@ impl ExchangeAPI for BinanceAPI {
             assets
                 .clone()
                 .into_iter()
-                .map(|p| p.symbol)
+                .map(|p| format!("[{} - {}]", p.symbol, p.amount))
                 .collect::<Vec<String>>()
                 .join(", ")
         );
@@ -175,6 +175,19 @@ impl ExchangeAPI for BinanceAPI {
     }
 
     fn open_orders(&self) -> CoreResult<Vec<Order>> {
+        fn parse_order_type(order_type: &str) -> OrderType {
+            match order_type {
+                "LIMIT" => OrderType::Limit,
+                "MARKET" => OrderType::Market,
+                "STOP_LOSS" => OrderType::StopLoss,
+                "STOP_LOSS_LIMIT" => OrderType::StopLossLimit,
+                "TAKE_PROFIT" => OrderType::TakeProfit,
+                "TAKE_PROFIT_LIMIT" => OrderType::TakeProfitLimit,
+                "LIMIT_MAKER" => OrderType::LimitMaker,
+                _ => OrderType::Limit,
+            }
+        }
+
         Ok(self
             .account
             .get_open_orders_all()?
@@ -182,9 +195,11 @@ impl ExchangeAPI for BinanceAPI {
             .map(|order| Order {
                 id: order.order_id.to_string(),
                 symbol: order.symbol,
-                order_type: TradeType::is_buy(order.side == "Buy"),
-                qty: order.executed_qty.parse::<f64>().unwrap(),
-                price: order.orig_qty.parse::<f64>().unwrap(),
+                order_type: parse_order_type(&order.type_name),
+                price: order.price,
+                qty: order.orig_qty.parse::<f64>().unwrap(),
+                executed_qty: order.executed_qty.parse::<f64>().unwrap(),
+                time: local_datetime_from_unix(order.time),
             })
             .collect())
     }
@@ -200,7 +215,10 @@ impl ExchangeAPI for BinanceAPI {
     // }
 
     fn trades_for_pair(&self, pair: Pair) -> CoreResult<Vec<Trade>> {
-        info!("BINANCE: trades_for_pair({})", self.pair_format(pair.clone()));
+        info!(
+            "BINANCE: trades_for_pair({})",
+            self.pair_format(pair.clone())
+        );
 
         let result = self.account.trade_history(self.pair_format(pair.clone()))?;
         info!("result: {} entries.", result.len());

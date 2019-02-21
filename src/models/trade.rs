@@ -211,3 +211,10 @@ pub fn group_trades_by_price(trades: Vec<Trade>) -> Vec<Trade> {
     grouped_trades.push(current_trade.clone());
     grouped_trades
 }
+
+// get the last BUY, or BUY-SELL pair
+pub fn pop_recent_trade_pair(trades: Vec<Trade>) -> Option<Vec<Trade>> {
+    group_trades_by_trade_type_pair(trades)
+        .last()
+        .map(|t| t.clone())
+}

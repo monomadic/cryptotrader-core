@@ -1,34 +1,64 @@
-use crate::models::*;
-use crate::utils::*;
+// use crate::models::*;
+// use crate::utils::*;
+use chrono::DateTime;
+use chrono::Local;
+use core::fmt;
 
 #[derive(Debug, Clone)]
 pub struct Order {
     pub id: String,
     pub symbol: String,
-    pub order_type: TradeType,
+    pub order_type: OrderType,
     pub qty: f64,
+    pub executed_qty: f64,
     pub price: f64,
+    pub time: DateTime<Local>,
 }
 
-impl Order {
-    // TODO: get ride of this shit
-    pub fn to_trade(&self) -> Trade {
-        Trade {
-            qty: self.qty,
-            id: self.id.clone(),
-            time: local_datetime_from_unix(0),
-            trade_type: self.order_type.clone(),
-            price: self.price,
-            pair: Pair {
-                symbol: self.symbol.clone(),
-                base: self.symbol.clone(),
-                price: self.price,
-            },
-            fee: 0.0,
-            fee_symbol: None,
+#[derive(Debug, Clone, PartialEq)]
+pub enum OrderType {
+    Limit,
+    Market,
+    StopLoss,
+    StopLossLimit,
+    TakeProfit,
+    TakeProfitLimit,
+    LimitMaker,
+}
+
+impl fmt::Display for OrderType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match &self {
+            OrderType::Limit => write!(f, "Limit"),
+            OrderType::Market => write!(f, "Market"),
+            OrderType::StopLoss => write!(f, "StopLoss"),
+            OrderType::StopLossLimit => write!(f, "StopLossLimit"),
+            OrderType::TakeProfit => write!(f, "TakeProfit"),
+            OrderType::TakeProfitLimit => write!(f, "TakeProfitLimit"),
+            OrderType::LimitMaker => write!(f, "LimitMaker"),
         }
     }
 }
+
+// impl Order {
+//     // TODO: get ride of this shit
+//     pub fn to_trade(&self) -> Trade {
+//         Trade {
+//             qty: self.qty,
+//             id: self.id.clone(),
+//             time: local_datetime_from_unix(0),
+//             trade_type: self.order_type.clone(),
+//             price: self.price,
+//             pair: Pair {
+//                 symbol: self.symbol.clone(),
+//                 base: self.symbol.clone(),
+//                 price: self.price,
+//             },
+//             fee: 0.0,
+//             fee_symbol: None,
+//         }
+//     }
+// }
 
 // reduce all orders with same price together (technically different orders from the order book)
 // pub fn group_by_price(orders: Vec<Order>) -> Vec<Order> {
@@ -149,43 +179,43 @@ impl Order {
 
 // group/average orders into a grouped vector by buy/sell type
 // used by average orders - not really too useful directly.
-pub fn group_orders(orders: Vec<Order>) -> Vec<Vec<Order>> {
-    let mut grouped_orders = Vec::new();
-    let mut current_order_group = Vec::new();
+// pub fn group_orders(orders: Vec<Order>) -> Vec<Vec<Order>> {
+//     let mut grouped_orders = Vec::new();
+//     let mut current_order_group = Vec::new();
 
-    if let Some(first_order) = orders.first() {
-        let mut current_order_type = first_order.order_type;
+//     if let Some(first_order) = orders.first() {
+//         let mut current_order_type = &first_order.order_type;
 
-        for order in orders.clone() {
-            if order.order_type != current_order_type {
-                grouped_orders.push(current_order_group.clone());
-                current_order_group = Vec::new();
-                current_order_type = order.order_type;
-            }
-            current_order_group.push(order);
-        }
-        grouped_orders.push(current_order_group);
-    }
-    grouped_orders
-}
+//         for order in orders.clone() {
+//             if order.order_type != current_order_type.clone() {
+//                 grouped_orders.push(current_order_group.clone());
+//                 current_order_group = Vec::new();
+//                 current_order_type = &order.order_type.clone();
+//             }
+//             current_order_group.push(order);
+//         }
+//         grouped_orders.push(current_order_group);
+//     }
+//     grouped_orders
+// }
 
-pub fn average_orders(orders: Vec<Order>) -> Vec<Order> {
-    group_orders(orders)
-        .iter()
-        .map(|order_group| average_order(order_group.to_vec()))
-        .collect()
-}
+// pub fn average_orders(orders: Vec<Order>) -> Vec<Order> {
+//     group_orders(orders)
+//         .iter()
+//         .map(|order_group| average_order(order_group.to_vec()))
+//         .collect()
+// }
 
-pub fn average_order(orders: Vec<Order>) -> Order {
-    let mut first_order = orders.first().unwrap().clone();
-    let total_qty = orders.iter().map(|o| o.qty).sum();
-    let total_price = orders.iter().map(|o| o.qty * o.price).sum::<f64>();
-    let average_price = total_price / total_qty as f64;
+// pub fn average_order(orders: Vec<Order>) -> Order {
+//     let mut first_order = orders.first().unwrap().clone();
+//     let total_qty = orders.iter().map(|o| o.qty).sum();
+//     let total_price = orders.iter().map(|o| o.qty * o.price).sum::<f64>();
+//     let average_price = total_price / total_qty as f64;
 
-    // println!("total qty: {}, total price: {}, average_price: {}", total_qty, total_price, average_price);
+//     // println!("total qty: {}, total price: {}, average_price: {}", total_qty, total_price, average_price);
 
-    first_order.price = average_price;
-    first_order.qty = total_qty;
+//     first_order.price = average_price;
+//     first_order.qty = total_qty;
 
-    first_order
-}
+//     first_order
+// }

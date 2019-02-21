@@ -1,9 +1,11 @@
+use crate::error::*;
 use crate::models::*;
+use crate::utils::*;
 
 #[derive(Debug, Clone)]
 pub struct Position {
     pub trades: Vec<Trade>,
-    pub wallet_qty: f64,
+    pub asset: Asset,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -28,23 +30,21 @@ impl ::std::fmt::Display for PositionState {
 }
 
 impl Position {
-    pub fn new(trades: Vec<Trade>, qty: f64) -> Vec<Position> {
-        group_trades_by_trade_type(trades)
-            .into_iter()
-            .map(|trade_group| Position {
-                trades: trade_group,
-                wallet_qty: qty,
-            })
-            .collect()
+    pub fn new(trades: Vec<Trade>, asset: Asset) -> CoreResult<Self> {
+        match pop_recent_trade_pair(trades.clone()) {
+            Some(trades) => Ok(Position { trades, asset }),
+            None => Err(Box::new(TrailerError::Generic(format!(
+                "could not find trades: {:?}",
+                trades
+            )))),
+        }
     }
 
     pub fn symbol(&self) -> String {
         self.trades
             .first()
-            .expect("symbol to be present")
-            .pair
-            .symbol
-            .clone()
+            .map(|trade| trade.pair.symbol.clone())
+            .unwrap_or("ERROR".to_string())
     }
 
     pub fn entry_price(&self) -> f64 {
@@ -62,6 +62,14 @@ impl Position {
         }
     }
 
+    pub fn current_price(&self) -> f64 {
+        self.buy_trades()
+            .into_iter()
+            .map(|o| o.pair.price)
+            .sum::<f64>()
+            / self.buy_trades().len() as f64
+    }
+
     pub fn buy_qty(&self) -> f64 {
         self.buy_trades().into_iter().map(|o| o.qty).sum()
     }
@@ -72,6 +80,7 @@ impl Position {
     pub fn buy_cost(&self) -> f64 {
         self.entry_price() * self.buy_qty()
     }
+
     pub fn sell_cost(&self) -> f64 {
         self.exit_price().unwrap_or(0.0) * self.sell_qty()
     }
@@ -105,6 +114,11 @@ impl Position {
 
     pub fn state(&self) -> PositionState {
         derive_state(self.buy_qty(), self.sell_qty())
+    }
+
+    pub fn current_profit_as_percent(&self) -> f64 {
+        // log::info!("{} {}, {}", self.trade_type, self.entry_price(), self.current_price());
+        price_percent(self.entry_price(), self.current_price())
     }
 }
 

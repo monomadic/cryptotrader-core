@@ -7,23 +7,29 @@ pub struct Pair {
     pub price: f64,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum AssetType {
     Fiat,
     Bitcoin,
     Altcoin,
 }
 
-impl Pair {
-    /// This is only a guess, based on the stablecoins out there.
-    pub fn base_type(&self) -> AssetType {
-        if self.base_is_fiat() {
+impl AssetType {
+    pub fn from_symbol(symbol: &str) -> Self {
+        if crate::KNOWN_STABLECOIN_SYMBOLS.contains(&symbol) {
             AssetType::Fiat
-        } else if self.base_is_btc() {
+        } else if crate::KNOWN_BTC_SYMBOLS.contains(&symbol) {
             AssetType::Bitcoin
         } else {
             AssetType::Altcoin
         }
+    }
+}
+
+impl Pair {
+    /// This is only a guess, based on the stablecoins out there.
+    pub fn base_type(&self) -> AssetType {
+        AssetType::from_symbol(&self.base)
     }
 
     pub fn base_is_fiat(&self) -> bool {
@@ -39,6 +45,13 @@ impl Pair {
     }
 }
 
+pub fn filter_pairs_by_asset_type(asset_type: AssetType, pairs: Vec<Pair>) -> Vec<Pair> {
+    pairs
+        .into_iter()
+        .filter({ |p| p.base_type() == asset_type })
+        .collect()
+}
+
 pub fn find_all_pairs_by_symbol(symbol: &str, pairs: Vec<Pair>) -> Vec<Pair> {
     pairs
         .into_iter()
@@ -50,6 +63,19 @@ pub fn find_pair_by_symbol_and_base(symbol: &str, base: &str, pairs: Vec<Pair>) 
     pairs
         .into_iter()
         .find({ |p| p.symbol == symbol.to_string() && p.base == base.to_string() })
+}
+
+pub fn find_first_btc_usd_pair(pairs: Vec<Pair>) -> Option<Pair> {
+    pairs.into_iter().find(|p| {
+        AssetType::from_symbol(&p.symbol) == AssetType::Bitcoin
+            && AssetType::from_symbol(&p.base) == AssetType::Fiat
+    })
+}
+
+pub fn find_first_btc_pair_for_symbol(symbol: &str, pairs: Vec<Pair>) -> Option<Pair> {
+    pairs
+        .into_iter()
+        .find(|p| p.symbol == symbol && AssetType::from_symbol(&p.base) == AssetType::Bitcoin)
 }
 
 type PairMap = HashMap<String, Vec<Pair>>;
