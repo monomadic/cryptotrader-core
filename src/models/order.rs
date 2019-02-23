@@ -1,5 +1,4 @@
-// use crate::models::*;
-// use crate::utils::*;
+use crate::models::*;
 use chrono::DateTime;
 use chrono::Local;
 use core::fmt;
@@ -7,8 +6,9 @@ use core::fmt;
 #[derive(Debug, Clone)]
 pub struct Order {
     pub id: String,
-    pub symbol: String,
-    pub order_type: OrderType,
+    pub symbol: String,        // sould be a Pair
+    pub order_type: OrderType, // limit, stop loss, etc.
+    pub trade_type: TradeType, // buy or sell
     pub qty: f64,
     pub executed_qty: f64,
     pub price: f64,

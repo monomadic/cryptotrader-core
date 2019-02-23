@@ -184,7 +184,15 @@ impl ExchangeAPI for BinanceAPI {
                 "TAKE_PROFIT" => OrderType::TakeProfit,
                 "TAKE_PROFIT_LIMIT" => OrderType::TakeProfitLimit,
                 "LIMIT_MAKER" => OrderType::LimitMaker,
-                _ => OrderType::Limit,
+                _ => OrderType::Limit, // TODO: throw Err here...
+            }
+        }
+
+        fn parse_trade_type(trade_type: &str) -> TradeType {
+            match trade_type {
+                "BUY" => TradeType::Buy,
+                "SELL" => TradeType::Sell,
+                _ => TradeType::Sell, // TODO: throw Err here...
             }
         }
 
@@ -196,6 +204,7 @@ impl ExchangeAPI for BinanceAPI {
                 id: order.order_id.to_string(),
                 symbol: order.symbol,
                 order_type: parse_order_type(&order.type_name),
+                trade_type: parse_trade_type(&order.side),
                 price: order.price,
                 qty: order.orig_qty.parse::<f64>().unwrap(),
                 executed_qty: order.executed_qty.parse::<f64>().unwrap(),

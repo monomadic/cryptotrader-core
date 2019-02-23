@@ -1,13 +1,10 @@
 use crate::models::*;
-// use crate::presenters::*;
 use crate::utils::*;
 
 #[derive(Debug, Clone)]
 pub struct PositionPresenter {
     pub position: Position,
     pub pairs: Vec<Pair>,
-    // pub btc_pair: Pair,
-    // pub usd_pair: Pair,
     pub btc_price_in_usd: f64,
 }
 
