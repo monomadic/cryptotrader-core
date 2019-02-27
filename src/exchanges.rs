@@ -26,7 +26,7 @@ pub trait ExchangeAPI {
         stop_price: f64,
         limit_price: f64,
     ) -> CoreResult<()>;
-    fn open_orders(&self) -> CoreResult<Vec<Order>>;
+    fn open_orders(&self, pairs: Vec<Pair>) -> CoreResult<Vec<Order>>;
     fn past_orders(&self) -> CoreResult<Vec<Order>>;
 
     // TODO remove

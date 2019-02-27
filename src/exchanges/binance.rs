@@ -165,7 +165,7 @@ impl ExchangeAPI for BinanceAPI {
         Err(Box::new(TrailerError::Unsupported))
     }
 
-    fn open_orders(&self) -> CoreResult<Vec<Order>> {
+    fn open_orders(&self, pairs: Vec<Pair>) -> CoreResult<Vec<Order>> {
         fn parse_order_type(order_type: &str) -> OrderType {
             match order_type {
                 "LIMIT" => OrderType::Limit,
@@ -190,8 +190,14 @@ impl ExchangeAPI for BinanceAPI {
         let mut results = Vec::new();
 
         for order in self.account.get_open_orders_all()? {
-            let pair = self
-                .string_to_pair(order.symbol.to_string(), 0.0)
+            // let pair = self
+            //     .string_to_pair(order.symbol.to_string(), 0.0)
+            //     .ok_or(TrailerError::PairNotFound(order.symbol.clone()))?;
+
+            let (symbol, base) = split_symbol_and_base(&order.symbol)
+                .ok_or(TrailerError::PairNotFound(order.symbol.clone()))?;
+
+            let pair = find_pair_by_symbol_and_base(&symbol, &base, pairs.clone())
                 .ok_or(TrailerError::PairNotFound(order.symbol.clone()))?;
 
             results.push(Order {

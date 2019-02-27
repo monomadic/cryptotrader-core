@@ -1,4 +1,5 @@
 use crate::models::*;
+use crate::utils::*;
 use chrono::DateTime;
 use chrono::Local;
 use core::fmt;
@@ -24,6 +25,12 @@ pub enum OrderType {
     TakeProfit,
     TakeProfitLimit,
     LimitMaker,
+}
+
+impl Order {
+    pub fn price_difference_as_percent(&self) -> f64 {
+        price_percent(self.pair.price, self.price)
+    }
 }
 
 impl fmt::Display for OrderType {
