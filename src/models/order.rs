@@ -6,7 +6,7 @@ use core::fmt;
 #[derive(Debug, Clone)]
 pub struct Order {
     pub id: String,
-    pub symbol: String,        // sould be a Pair
+    pub pair: Pair,
     pub order_type: OrderType, // limit, stop loss, etc.
     pub trade_type: TradeType, // buy or sell
     pub qty: f64,

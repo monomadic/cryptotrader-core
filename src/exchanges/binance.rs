@@ -105,7 +105,8 @@ impl ExchangeAPI for BinanceAPI {
 
     fn pair(&self, pair: &str) -> CoreResult<Pair> {
         let price = self.market.get_price(pair)?;
-        let (symbol, base) = split_symbol_and_base(pair)?;
+        let (symbol, base) =
+            split_symbol_and_base(pair).ok_or(TrailerError::PairNotFound(pair.to_string()))?;
 
         Ok(Pair {
             symbol: symbol.to_string(),
@@ -119,23 +120,14 @@ impl ExchangeAPI for BinanceAPI {
 
         Ok(prices
             .into_iter()
-            .map(|pair| {
-                let price = pair.price;
-                match split_symbol_and_base(&pair.symbol) {
-                    Ok((symbol, base)) => Some(Pair {
-                        base,
-                        price,
-                        symbol,
-                    }),
-                    Err(e) => None,
-                }
-            })
+            .map(|pair| self.string_to_pair(pair.symbol, pair.price))
             .filter(|r| r.is_some())
             .map(|r| r.unwrap())
             .collect())
     }
 
     fn pair_format(&self, pair: Pair) -> String {
+        // pair_to_string()?
         format!("{}{}", pair.symbol, pair.base)
     }
 
@@ -143,13 +135,12 @@ impl ExchangeAPI for BinanceAPI {
         format!("{}{}", symbol, base)
     }
 
-    fn string_to_pair(&self, pair: String, price: f64) -> Pair {
-        let (symbol, base) = split_symbol_and_base(&pair).expect("things to work out ok");
-        Pair {
-            symbol,
+    fn string_to_pair(&self, pair: String, price: f64) -> Option<Pair> {
+        split_symbol_and_base(&pair).map(|(symbol, base)| Pair {
             base,
             price,
-        }
+            symbol,
+        })
     }
 
     fn limit_buy(&self, symbol: &str, amount: f64, price: f64) -> CoreResult<()> {
@@ -196,21 +187,26 @@ impl ExchangeAPI for BinanceAPI {
             }
         }
 
-        Ok(self
-            .account
-            .get_open_orders_all()?
-            .into_iter()
-            .map(|order| Order {
+        let mut results = Vec::new();
+
+        for order in self.account.get_open_orders_all()? {
+            let pair = self
+                .string_to_pair(order.symbol.to_string(), 0.0)
+                .ok_or(TrailerError::PairNotFound(order.symbol.clone()))?;
+
+            results.push(Order {
                 id: order.order_id.to_string(),
-                symbol: order.symbol,
+                pair,
                 order_type: parse_order_type(&order.type_name),
                 trade_type: parse_trade_type(&order.side),
                 price: order.price,
                 qty: order.orig_qty.parse::<f64>().unwrap(),
                 executed_qty: order.executed_qty.parse::<f64>().unwrap(),
                 time: local_datetime_from_unix(order.time),
-            })
-            .collect())
+            });
+        }
+
+        Ok(results)
     }
 
     fn past_orders(&self) -> CoreResult<Vec<Order>> {
@@ -297,14 +293,11 @@ pub fn connect(api_key: &str, secret_key: &str) -> BinanceAPI {
     }
 }
 
-// TODO: should be Option
-fn split_symbol_and_base(pair: &str) -> CoreResult<(String, String)> {
+fn split_symbol_and_base(pair: &str) -> Option<(String, String)> {
     for base in BASE_PAIRS.iter() {
         if pair.ends_with(base) {
-            return Ok((pair.trim_end_matches(base).to_string(), base.to_string()));
+            return Some((pair.trim_end_matches(base).to_string(), base.to_string()));
         };
     }
-    Err(Box::new(TrailerError::Generic(format!(
-        "base pair not found"
-    ))))
+    None
 }

@@ -13,6 +13,7 @@ pub enum TrailerError {
     Generic(String),
     APIError(String),
     MissingArgumentError(String),
+    PairNotFound(String),
 }
 
 impl Error for TrailerError {
@@ -31,6 +32,7 @@ impl Display for TrailerError {
             TrailerError::Unsupported => write!(f, "Unsupported"),
             TrailerError::Generic(err) => write!(f, "Generic: {}", err),
             TrailerError::MissingArgumentError(err) => write!(f, "MissingArgumentError: {}", err),
+            TrailerError::PairNotFound(pair) => write!(f, "PairNotFound: {}", pair),
         }
     }
 }

@@ -37,7 +37,7 @@ pub trait ExchangeAPI {
     fn chart_data(&self, symbol: &str, interval: &str) -> CoreResult<Vec<Candlestick>>;
 
     fn pair_format(&self, pair: Pair) -> String;
-    fn string_to_pair(&self, pair: String, price: f64) -> Pair;
+    fn string_to_pair(&self, pair: String, price: f64) -> Option<Pair>;
 
     fn btc_pair(&self, pairs: Vec<Pair>) -> Option<Pair> {
         find_pair_by_symbol_and_base(&self.btc_symbol(), &self.usd_symbol(), pairs)

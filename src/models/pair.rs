@@ -7,6 +7,13 @@ pub struct Pair {
     pub price: f64,
 }
 
+use std::{fmt, fmt::Display};
+impl Display for Pair {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}-{}", self.symbol, self.base)
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum AssetType {
     Fiat,
