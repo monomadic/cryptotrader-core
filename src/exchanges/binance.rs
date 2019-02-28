@@ -264,10 +264,10 @@ impl ExchangeAPI for BinanceAPI {
     //         .collect())
     // }
 
-    fn chart_data(&self, symbol: &str, interval: &str) -> CoreResult<Vec<Candlestick>> {
+    fn chart_data(&self, pair: &str, interval: &str) -> CoreResult<Vec<Candlestick>> {
         Ok(self
             .market
-            .get_klines(symbol, interval)?
+            .get_klines(pair, interval)?
             .iter()
             .map(|cs| Candlestick {
                 open_time: cs.open_time as i32,

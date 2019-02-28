@@ -70,6 +70,10 @@ impl Position {
             / self.buy_trades().len() as f64
     }
 
+    pub fn qty(&self) -> f64 {
+        self.buy_qty() - self.sell_qty()
+    }
+
     pub fn buy_qty(&self) -> f64 {
         self.buy_trades().into_iter().map(|o| o.qty).sum()
     }
@@ -106,6 +110,16 @@ impl Position {
             .into_iter()
             .filter(|t| t.trade_type == TradeType::Sell)
             .collect()
+    }
+
+    /// averaged buy trade
+    pub fn buy_trade(&self) -> Trade {
+        average_trades(self.buy_trades())
+    }
+
+    /// averaged sell trade
+    pub fn sell_trade(&self) -> Trade {
+        average_trades(self.sell_trades())
     }
 
     pub fn remaining_qty(&self) -> f64 {

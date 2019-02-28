@@ -30,11 +30,9 @@ pub trait ExchangeAPI {
     fn past_orders(&self) -> CoreResult<Vec<Order>>;
 
     // TODO remove
-    // fn trades_for(&self, symbol: &str) -> CoreResult<Vec<Order>>;
-    // fn trades_for(&self, symbol: &str) -> CoreResult<Vec<Trade>>;
     fn trades_for_pair(&self, pair: Pair) -> CoreResult<Vec<Trade>>;
 
-    fn chart_data(&self, symbol: &str, interval: &str) -> CoreResult<Vec<Candlestick>>;
+    fn chart_data(&self, pair: &str, interval: &str) -> CoreResult<Vec<Candlestick>>;
 
     fn pair_format(&self, pair: Pair) -> String;
     fn string_to_pair(&self, pair: String, price: f64) -> Option<Pair>;

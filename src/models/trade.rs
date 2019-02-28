@@ -115,7 +115,9 @@ pub fn average_trades(trades: Vec<Trade>) -> Trade {
     let trades_iter = trades.into_iter();
     let qty = trades_iter.clone().map(|t| t.qty).sum();
 
-    let average_price = average(&trades_iter.clone().map(|t| t.price).collect());
+    let average_price: f64 = trades_iter.clone().map(|t| t.price * t.qty).sum::<f64>() / qty;
+
+    // let average_price = average(&trades_iter.clone().map(|t| t.price).collect());
 
     let pairs = trades_iter.clone().map(|t| t.pair).collect();
     let id = trades_iter

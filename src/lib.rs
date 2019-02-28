@@ -33,6 +33,7 @@ pub mod presenters {
 
 pub mod indicators {
     pub mod rsi;
+    pub mod sma;
 }
 
 pub mod socket {

@@ -22,7 +22,7 @@ impl PositionPresenter {
     }
 
     pub fn qty(&self) -> f64 {
-        self.position.asset.amount
+        self.position.qty()
     }
 
     // delete
