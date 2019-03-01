@@ -1,6 +1,13 @@
 // use crate::error::*;
 use crate::models::*;
 
+// pub fn TA_RSI(startIdx: ::std::os::raw::c_int,
+//               endIdx: ::std::os::raw::c_int, inReal: *const f64,
+//               optInTimePeriod: ::std::os::raw::c_int,
+//               outBegIdx: *mut ::std::os::raw::c_int,
+//               outNBElement: *mut ::std::os::raw::c_int, outReal: *mut f64)
+//  -> TA_RetCode;
+
 use talib::{TA_Integer, TA_RetCode, TA_RSI};
 /// Compute RSI(period) on `close_prices`
 /// This function returns a tuple containing the list of rsi values and the index of the first

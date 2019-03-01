@@ -18,6 +18,7 @@ dirs = "1.0"
 log = "0.4.5"
 simple_logger = "1.0.1"
 chrono = "0.4.6"
+ta = "0.1.1"
 
 [lib]
 name = "cryptotrader"

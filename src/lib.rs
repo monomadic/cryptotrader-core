@@ -32,6 +32,8 @@ pub mod presenters {
 }
 
 pub mod indicators {
+    pub mod bbands;
+    pub mod macd;
     pub mod rsi;
     pub mod sma;
 }
