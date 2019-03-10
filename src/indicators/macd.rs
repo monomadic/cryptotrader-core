@@ -45,6 +45,19 @@ pub enum Crossing {
     Golden(usize),
 }
 
+// score 0.0 to 10.0
+pub fn score(crossings: Vec<Crossing>) -> f64 {
+    for crossing in crossings {
+        println!("{:?}", crossing);
+        match crossing {
+            Crossing::Death(_) => return 0.0, // is this right? should it not be distance toward a golden at this point?
+            Crossing::Golden(_period) => return 10.0,
+            _ => (),
+        }
+    }
+    0.0
+}
+
 pub fn find_crosses(signal: Vec<(f64, f64)>) -> Vec<Crossing> {
     let mut crosses: Vec<Crossing> = Vec::new();
     let mut previous_slow: f64 = 0.0;
@@ -82,10 +95,10 @@ pub fn find_crosses(signal: Vec<(f64, f64)>) -> Vec<Crossing> {
         let divergence = fast - slow;
         let previous_divergence = previous_fast - previous_slow;
 
-        println!(
-            "{:?}",
-            (divergence, previous_divergence, num_signals - index)
-        );
+        // println!(
+        //     "{:?}",
+        //     (divergence, previous_divergence, num_signals - index)
+        // );
         if divergence > 0.0 && previous_divergence <= 0.0 {
             crosses.push(Crossing::Golden(num_signals - index))
         } else if divergence < 0.0 && previous_divergence >= 0.0 {

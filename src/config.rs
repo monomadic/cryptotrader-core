@@ -1,9 +1,9 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use toml;
 use serde_derive::Deserialize;
 use std::collections::BTreeMap;
+use toml;
 
 use crate::error::*;
 
@@ -14,10 +14,10 @@ pub struct Config {
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct APIConfig {
-    pub api_key: String,
-    pub secret_key: String,
-    pub positions: Option<Vec<String>>,
-    pub watch: Option<Vec<String>>,
+    pub api_key: String,                // todo: optional
+    pub secret_key: String,             // todo: optional
+    pub positions: Option<Vec<String>>, // todo: remove
+    pub watch: Option<Vec<String>>,     // todo: remove
 }
 
 pub fn read() -> CoreResult<Config> {
@@ -41,7 +41,8 @@ pub fn read() -> CoreResult<Config> {
         Ok(String::from_utf8(bytebuffer)?)
     }
 
-    let home_path = dirs::home_dir().ok_or_else(|| TrailerError::Generic(format!("cannot get homedir")))?;
+    let home_path =
+        dirs::home_dir().ok_or_else(|| TrailerError::Generic(format!("cannot get homedir")))?;
 
     // search paths for config files, in order of search preference.
     let search_paths = vec![
@@ -55,7 +56,10 @@ pub fn read() -> CoreResult<Config> {
             // info!("loading config from {}", path);
             return Ok(toml::from_str(&str_from_file_path(&path)?)?);
         }
-    };
+    }
 
-    Err(Box::new(TrailerError::ConfigError(format!("could not find a config file in the following locations: {:?}", search_paths))))
+    Err(Box::new(TrailerError::ConfigError(format!(
+        "could not find a config file in the following locations: {:?}",
+        search_paths
+    ))))
 }

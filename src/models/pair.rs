@@ -50,6 +50,30 @@ impl Pair {
     pub fn base_is_alt(&self) -> bool {
         !(self.base_is_fiat() || self.base_is_btc())
     }
+
+    pub fn pairs_to_pairmap(pairs: Vec<Pair>) -> PairMap {
+        let mut pairs_by_symbol: PairMap = HashMap::new();
+
+        for pair in pairs {
+            if pairs_by_symbol.contains_key(&pair.symbol) {
+                if let Some(mutable_pair) = pairs_by_symbol.get_mut(&pair.symbol) {
+                    mutable_pair.push(pair);
+                } else {
+                }
+            } else {
+                pairs_by_symbol.insert(pair.symbol.clone(), vec![pair.clone()]);
+            }
+        }
+
+        pairs_by_symbol
+    }
+
+    pub fn base_pairs_for_symbol(symbol: &str, pairs: Vec<Pair>) -> Vec<Pair> {
+        pairs
+            .into_iter()
+            .filter({ |p| p.symbol == symbol.to_string() })
+            .collect()
+    }
 }
 
 pub fn filter_pairs_by_asset_type(asset_type: AssetType, pairs: Vec<Pair>) -> Vec<Pair> {
@@ -59,11 +83,9 @@ pub fn filter_pairs_by_asset_type(asset_type: AssetType, pairs: Vec<Pair>) -> Ve
         .collect()
 }
 
+// todo: remove
 pub fn find_all_pairs_by_symbol(symbol: &str, pairs: Vec<Pair>) -> Vec<Pair> {
-    pairs
-        .into_iter()
-        .filter({ |p| p.symbol == symbol.to_string() })
-        .collect()
+    Pair::base_pairs_for_symbol(symbol, pairs)
 }
 
 pub fn find_pair_by_symbol_and_base(symbol: &str, base: &str, pairs: Vec<Pair>) -> Option<Pair> {
@@ -95,21 +117,9 @@ pub fn average_pairs(pairs: Vec<Pair>) -> Pair {
     pair
 }
 
+// todo: remove
 pub fn sort_pairs(pairs: Vec<Pair>) -> PairMap {
-    let mut pairs_by_symbol: PairMap = HashMap::new();
-
-    for pair in pairs {
-        if pairs_by_symbol.contains_key(&pair.symbol) {
-            if let Some(mutable_pair) = pairs_by_symbol.get_mut(&pair.symbol) {
-                mutable_pair.push(pair);
-            } else {
-            }
-        } else {
-            pairs_by_symbol.insert(pair.symbol.clone(), vec![pair.clone()]);
-        }
-    }
-
-    pairs_by_symbol
+    Pair::pairs_to_pairmap(pairs)
 }
 
 pub fn filter_pairmap_by_symbols(pairs: PairMap, symbols: Vec<&str>) -> PairMap {

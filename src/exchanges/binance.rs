@@ -225,6 +225,7 @@ impl ExchangeAPI for BinanceAPI {
     //     panic!("unsupported");
     // }
 
+    /// find all trades for a single trading pair (market).
     fn trades_for_pair(&self, pair: Pair) -> CoreResult<Vec<Trade>> {
         info!(
             "BINANCE: trades_for_pair({})",
@@ -234,7 +235,7 @@ impl ExchangeAPI for BinanceAPI {
         let result = self.account.trade_history(self.pair_format(pair.clone()))?;
         info!("result: {} entries.", result.len());
 
-        Ok(result
+        let mut trades: Vec<Trade> = result
             .into_iter()
             .map(|trade| Trade {
                 id: trade.id.to_string(),
@@ -246,7 +247,30 @@ impl ExchangeAPI for BinanceAPI {
                 fee: trade.commission.parse::<f64>().unwrap_or(0.0),
                 fee_symbol: Some(trade.commission_asset),
             })
-            .collect())
+            .collect();
+
+        // sort by time
+        trades.sort_by(|a, b| a.time.cmp(&b.time));
+
+        Ok(trades)
+    }
+
+    /// find all trades for a symbol across all base pairs.
+    fn trades_for_symbol(&self, symbol: &str, pairs: Vec<Pair>) -> CoreResult<Vec<Trade>> {
+        info!("BINANCE: trades_for_symbol({})", symbol);
+
+        let pairs = find_all_pairs_by_symbol(&symbol, pairs.clone());
+
+        let mut trades = Vec::new();
+
+        for pair in pairs {
+            trades.append(&mut self.trades_for_pair(pair)?);
+        }
+
+        // sort by time
+        trades.sort_by(|a, b| a.time.cmp(&b.time));
+
+        Ok(trades)
     }
 
     // fn trades_for(&self, symbol: &str) -> CoreResult<Vec<Order>> {

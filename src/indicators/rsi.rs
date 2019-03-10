@@ -1,5 +1,17 @@
-// use crate::error::*;
+use crate::error::CoreResult;
+use crate::error::*;
 use crate::models::*;
+use ta::indicators::RelativeStrengthIndex as Rsi;
+use ta::Next;
+
+pub fn rsi(period: u32, candlesticks: &Vec<Candlestick>) -> CoreResult<Vec<f64>> {
+    let mut rsi = Rsi::new(period)?;
+
+    Ok(candlesticks
+        .iter()
+        .map(|candlestick| rsi.next(candlestick.close_price))
+        .collect())
+}
 
 // pub fn TA_RSI(startIdx: ::std::os::raw::c_int,
 //               endIdx: ::std::os::raw::c_int, inReal: *const f64,
@@ -12,7 +24,7 @@ use talib::{TA_Integer, TA_RetCode, TA_RSI};
 /// Compute RSI(period) on `close_prices`
 /// This function returns a tuple containing the list of rsi values and the index of the first
 /// close to have an associated rsi value
-pub fn rsi(period: u32, close_prices: &Vec<f64>) -> Vec<f64> {
+pub fn _rsi(period: u32, close_prices: &Vec<f64>) -> Vec<f64> {
     let mut out: Vec<f64> = Vec::with_capacity(close_prices.len());
     let mut out_begin: TA_Integer = 0;
     let mut out_size: TA_Integer = 0;
@@ -40,10 +52,15 @@ pub fn rsi(period: u32, close_prices: &Vec<f64>) -> Vec<f64> {
     out
 }
 
+pub fn current_rsi(candlesticks: &Vec<Candlestick>) -> CoreResult<f64> {
+    Ok(*rsi(14, &candlesticks)?.last().ok_or(TrailerError::Generic(
+        "rsi failed to return results".to_string(),
+    ))?)
+}
+
+// TODO: remove
 pub fn last_rsi_value(candlesticks: &Vec<Candlestick>) -> f64 {
-    let close_prices: Vec<f64> = candlesticks.into_iter().map(|c| c.close_price).collect();
-    let rsi_values = rsi(14, &close_prices);
-    *rsi_values.last().expect("rsi_values to have content")
+    current_rsi(candlesticks).expect("rsi results")
 }
 
 // pub fn rsi_from_clean_chart_data(

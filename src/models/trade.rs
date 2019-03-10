@@ -30,16 +30,19 @@ impl Trade {
     }
 
     pub fn current_profit(&self) -> f64 {
-        self.current_cost() - self.entry_cost()
-        // match self.trade_type {
-        //     TradeType::Buy => self.current_cost() - self.entry_cost(),
-        //     TradeType::Sell => 0.0 - self.current_cost() - self.entry_cost(),
-        // }
+        match self.trade_type {
+            TradeType::Buy => self.current_cost() - self.entry_cost(),
+            TradeType::Sell => self.entry_cost() - self.current_cost(),
+        }
     }
 
     pub fn current_profit_as_percent(&self) -> f64 {
         // log::info!("{} {}, {}", self.trade_type, self.entry_price(), self.current_price());
-        price_percent(self.entry_price(), self.current_price())
+
+        match self.trade_type {
+            TradeType::Buy => price_percent(self.entry_price(), self.current_price()),
+            TradeType::Sell => price_percent(self.current_price(), self.entry_price()),
+        }
     }
 
     pub fn current_price(&self) -> f64 {
@@ -139,6 +142,7 @@ pub fn average_trades(trades: Vec<Trade>) -> Trade {
 }
 
 pub fn group_trades_by_trade_type(trades: Vec<Trade>) -> Vec<Vec<Trade>> {
+    // TODO: check that the symbols are the same when grouping
     let mut trade_group: Vec<Trade> = Vec::new();
     let mut grouped_trades: Vec<Vec<Trade>> = Vec::new();
 

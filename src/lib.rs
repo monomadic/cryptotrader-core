@@ -34,8 +34,11 @@ pub mod presenters {
 pub mod indicators {
     pub mod bbands;
     pub mod macd;
+    pub mod ote;
     pub mod rsi;
     pub mod sma;
+
+    pub use self::{bbands::*, macd::*, ote::*, rsi::*, sma::*};
 }
 
 pub mod socket {
