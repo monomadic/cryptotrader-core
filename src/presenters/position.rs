@@ -1,5 +1,6 @@
 use crate::models::*;
 use crate::utils::*;
+use chrono::{offset::Local, prelude::DateTime};
 
 #[derive(Debug, Clone)]
 pub struct PositionPresenter {
@@ -19,6 +20,10 @@ impl PositionPresenter {
         } else {
             None
         }
+    }
+
+    pub fn time(&self) -> Option<DateTime<Local>> {
+        self.position.trades.first().map(|t| t.time)
     }
 
     pub fn qty(&self) -> f64 {

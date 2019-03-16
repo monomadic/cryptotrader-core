@@ -5,7 +5,8 @@ authors = ["Rob Saunders <rob@wearebrandnew.com>"]
 edition = "2018"
 
 [dependencies]
-binance_api = { package = "binance", git = "https://github.com/robsaunders/binance-rs.git" }
+# binance_api = { package = "binance", git = "https://github.com/robsaunders/binance-rs.git" }
+binance_api = { package = "binance", path = "../_forks/binance-rs" }
 talib = { package = "ta-lib-wrapper", version = "0.1.1" }
 reqwest = "0.8.4"
 math = "*"

@@ -48,7 +48,11 @@ impl Position {
     }
 
     pub fn entry_price(&self) -> f64 {
-        self.buy_trades().into_iter().map(|o| o.price).sum::<f64>() / self.buy_trades().len() as f64
+        self.buy_trades()
+            .into_iter()
+            .map(|o| o.price * o.qty)
+            .sum::<f64>()
+            / self.buy_trades().into_iter().map(|o| o.qty).sum::<f64>()
     }
 
     pub fn exit_price(&self) -> Option<f64> {

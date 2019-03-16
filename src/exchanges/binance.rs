@@ -23,8 +23,10 @@ pub struct BinanceWS {
     socket: WebSockets,
 }
 
-// pub static BASE_PAIRS: [&str; 7] = ["USDT", "BTC", "ETH", "USDC", "TUSD", "BNB", "USDS"];
-pub static BASE_PAIRS: [&str; 2] = ["USDT", "BTC"];
+pub static BASE_PAIRS: [&str; 10] = [
+    "USDT", "BTC", "ETH", "USDC", "TUSD", "BNB", "USDS", "BNB", "PAX", "XRP",
+];
+// pub static BASE_PAIRS: [&str; 2] = ["USDT", "BTC"];
 pub static BTC_SYMBOL: &str = "BTC";
 pub static USD_SYMBOL: &str = "USDT";
 
@@ -72,6 +74,30 @@ impl ExchangeAPI for BinanceAPI {
             .into_iter()
             .map(|pair| pair.to_string())
             .collect()
+    }
+
+    fn market_depth(&self, pair: &str) -> CoreResult<Depth> {
+        let depth = self.market.get_depth(pair)?;
+        // println!("{:?}", depth);
+
+        Ok(Depth {
+            bids: depth
+                .bids
+                .into_iter()
+                .map(|o| Offer {
+                    price: o.price,
+                    qty: o.qty,
+                })
+                .collect(),
+            asks: depth
+                .asks
+                .into_iter()
+                .map(|o| Offer {
+                    price: o.price,
+                    qty: o.qty,
+                })
+                .collect(),
+        })
     }
 
     /// Simple list of balances
@@ -141,6 +167,31 @@ impl ExchangeAPI for BinanceAPI {
             price,
             symbol,
         })
+    }
+
+    fn book_tickers(&self) -> CoreResult<Vec<BookTicker>> {
+        let binance_api::model::BookTickers::AllBookTickers(tickers) =
+            self.market.get_all_book_tickers()?;
+
+        Ok(tickers
+            .into_iter()
+            .map(|ticker| {
+                let (symbol, base) = split_symbol_and_base(&ticker.symbol)
+                    .expect(&format!("could not split symbol: {:?}", &ticker.symbol));
+
+                BookTicker {
+                    pair: Pair {
+                        symbol: symbol,
+                        base: base,
+                        price: ticker.ask_price,
+                    },
+                    bid_price: ticker.bid_price,
+                    bid_qty: ticker.bid_qty,
+                    ask_price: ticker.ask_price,
+                    ask_qty: ticker.ask_qty,
+                }
+            })
+            .collect())
     }
 
     fn limit_buy(&self, symbol: &str, amount: f64, price: f64) -> CoreResult<()> {
@@ -233,7 +284,7 @@ impl ExchangeAPI for BinanceAPI {
         );
 
         let result = self.account.trade_history(self.pair_format(pair.clone()))?;
-        info!("result: {} entries.", result.len());
+        info!("result: {:?}", result);
 
         let mut trades: Vec<Trade> = result
             .into_iter()
@@ -259,12 +310,14 @@ impl ExchangeAPI for BinanceAPI {
     fn trades_for_symbol(&self, symbol: &str, pairs: Vec<Pair>) -> CoreResult<Vec<Trade>> {
         info!("BINANCE: trades_for_symbol({})", symbol);
 
-        let pairs = find_all_pairs_by_symbol(&symbol, pairs.clone());
+        let pairs = Pair::base_pairs_for_symbol(&symbol, &pairs);
 
         let mut trades = Vec::new();
 
         for pair in pairs {
-            trades.append(&mut self.trades_for_pair(pair)?);
+            let mut result = self.trades_for_pair(pair)?;
+            info!("result: {:?}", result);
+            trades.append(&mut result);
         }
 
         // sort by time

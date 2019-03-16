@@ -19,6 +19,10 @@ pub mod models {
     pub use self::position::*;
     mod pair;
     pub use self::pair::*;
+    mod book_ticker;
+    pub use self::book_ticker::*;
+    mod depth;
+    pub use self::depth::*;
 }
 
 pub mod presenters {

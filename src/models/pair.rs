@@ -68,11 +68,28 @@ impl Pair {
         pairs_by_symbol
     }
 
-    pub fn base_pairs_for_symbol(symbol: &str, pairs: Vec<Pair>) -> Vec<Pair> {
+    pub fn base_pairs_for_symbol(symbol: &str, pairs: &Vec<Pair>) -> Vec<Pair> {
         pairs
             .into_iter()
             .filter({ |p| p.symbol == symbol.to_string() })
+            .map(|p| p.clone())
             .collect()
+    }
+
+    pub fn find_first_btc_usd_pair(pairs: &Vec<Pair>) -> Option<Pair> {
+        pairs
+            .into_iter()
+            .find(|p| {
+                AssetType::from_symbol(&p.symbol) == AssetType::Bitcoin
+                    && AssetType::from_symbol(&p.base) == AssetType::Fiat
+            })
+            .map(|p| p.clone())
+    }
+
+    pub fn find_first_btc_pair_for_symbol(symbol: &str, pairs: Vec<Pair>) -> Option<Pair> {
+        pairs
+            .into_iter()
+            .find(|p| p.symbol == symbol && AssetType::from_symbol(&p.base) == AssetType::Bitcoin)
     }
 }
 
@@ -84,9 +101,9 @@ pub fn filter_pairs_by_asset_type(asset_type: AssetType, pairs: Vec<Pair>) -> Ve
 }
 
 // todo: remove
-pub fn find_all_pairs_by_symbol(symbol: &str, pairs: Vec<Pair>) -> Vec<Pair> {
-    Pair::base_pairs_for_symbol(symbol, pairs)
-}
+// pub fn find_all_pairs_by_symbol(symbol: &str, pairs: Vec<Pair>) -> Vec<Pair> {
+//     Pair::base_pairs_for_symbol(symbol, pairs)
+// }
 
 pub fn find_pair_by_symbol_and_base(symbol: &str, base: &str, pairs: Vec<Pair>) -> Option<Pair> {
     pairs
@@ -94,18 +111,15 @@ pub fn find_pair_by_symbol_and_base(symbol: &str, base: &str, pairs: Vec<Pair>) 
         .find({ |p| p.symbol == symbol.to_string() && p.base == base.to_string() })
 }
 
-pub fn find_first_btc_usd_pair(pairs: Vec<Pair>) -> Option<Pair> {
-    pairs.into_iter().find(|p| {
-        AssetType::from_symbol(&p.symbol) == AssetType::Bitcoin
-            && AssetType::from_symbol(&p.base) == AssetType::Fiat
-    })
-}
+// // todo: remove
+// pub fn find_first_btc_usd_pair(pairs: Vec<Pair>) -> Option<Pair> {
+//     Pair::find_first_btc_usd_pair(&pairs)
+// }
 
-pub fn find_first_btc_pair_for_symbol(symbol: &str, pairs: Vec<Pair>) -> Option<Pair> {
-    pairs
-        .into_iter()
-        .find(|p| p.symbol == symbol && AssetType::from_symbol(&p.base) == AssetType::Bitcoin)
-}
+// // todo: remove
+// pub fn find_first_btc_pair_for_symbol(symbol: &str, pairs: Vec<Pair>) -> Option<Pair> {
+//     Pair::find_first_btc_pair_for_symbol(symbol, pairs)
+// }
 
 type PairMap = HashMap<String, Vec<Pair>>;
 use std::collections::HashMap;
