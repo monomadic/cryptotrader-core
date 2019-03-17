@@ -62,12 +62,6 @@ impl ExchangeAPI for BinanceAPI {
     fn usd_symbol(&self) -> String {
         USD_SYMBOL.into()
     }
-    fn btc_price(&self) -> CoreResult<Pair> {
-        self.pair("BTCUSDT")
-    }
-    // fn btc_pair(&self, pairs: Vec<Pair>) -> Option<Pair> {
-    //     find_pair_by_symbol_and_base(BTC_SYMBOL.into(), USD_SYMBOL.into(), pairs)
-    // }
 
     fn base_pairs(&self) -> Vec<String> {
         BASE_PAIRS

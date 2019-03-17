@@ -14,6 +14,12 @@ pub struct Trade {
     pub fee_symbol: Option<String>,
 }
 
+#[derive(Debug, Clone)]
+pub struct TradePair {
+    buy: Trade,
+    sell: Option<Trade>,
+}
+
 impl Trade {
     pub fn entry_price(&self) -> f64 {
         self.price
@@ -169,7 +175,40 @@ pub fn group_trades_by_trade_type(trades: Vec<Trade>) -> Vec<Vec<Trade>> {
 }
 
 /// group trades into buy-sell buy-sell buy-sell
-pub fn group_trades_by_trade_type_pair(trades: Vec<Trade>) -> Vec<Vec<Trade>> {
+pub fn group_trades_by_trade_type_pair(trades: Vec<Trade>) -> Vec<TradePair> {
+    let mut trade_pairs: Vec<TradePair> = Vec::new();
+    // organise trades by time
+
+    // group trades into vec<buy, sell>
+
+    // reverse the list
+    let mut trades: Vec<Trade> = trades.into_iter().rev().collect();
+
+    let mut current_trade_pair: TradePair = TradePair {
+        buy: trades.first().unwrap().clone(),
+        sell: None,
+    }; // fix this
+
+    while let Some(last_trade) = trades.pop() {
+        match last_trade.trade_type {
+            TradeType::Buy => {
+                current_trade_pair = TradePair {
+                    buy: last_trade,
+                    sell: None,
+                }
+            }
+            TradeType::Sell => {
+                current_trade_pair.sell = Some(last_trade);
+                trade_pairs.push(current_trade_pair.clone());
+            }
+        }
+    }
+
+    trade_pairs
+}
+
+/// group trades into buy-sell buy-sell buy-sell
+pub fn _group_trades_by_trade_type_pair(trades: Vec<Trade>) -> Vec<Vec<Trade>> {
     let mut positions = Vec::new();
     let mut current_trades: Vec<Trade> = Vec::new();
     let mut trades: Vec<Trade> = trades.into_iter().rev().collect();
@@ -218,9 +257,10 @@ pub fn group_trades_by_price(trades: Vec<Trade>) -> Vec<Trade> {
     grouped_trades
 }
 
-// get the last BUY, or BUY-SELL pair
-pub fn pop_recent_trade_pair(trades: Vec<Trade>) -> Option<Vec<Trade>> {
-    group_trades_by_trade_type_pair(trades)
-        .last()
-        .map(|t| t.clone())
-}
+// // get the last BUY, or BUY-SELL pair
+// pub fn pop_recent_trade_pair(trades: Vec<Trade>) -> Vec<Trade> {
+//     group_trades_by_trade_type_pair(trades)
+//         .last()
+//         .map(|t| t.clone())
+//         .unwrap_or(Vec::new())
+// }

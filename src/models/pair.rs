@@ -91,6 +91,16 @@ impl Pair {
             .into_iter()
             .find(|p| p.symbol == symbol && AssetType::from_symbol(&p.base) == AssetType::Bitcoin)
     }
+
+    pub fn find_first_fiat_pair_for_symbol(symbol: &str, pairs: Vec<Pair>) -> Option<Pair> {
+        pairs
+            .into_iter()
+            .find(|p| p.symbol == symbol && AssetType::from_symbol(&p.base) == AssetType::Fiat)
+    }
+
+    pub fn btc_price(pairs: Vec<Pair>) -> Option<f64> {
+        Pair::find_first_btc_usd_pair(&pairs).map(|p| p.price)
+    }
 }
 
 pub fn filter_pairs_by_asset_type(asset_type: AssetType, pairs: Vec<Pair>) -> Vec<Pair> {

@@ -5,7 +5,7 @@ use crate::utils::*;
 #[derive(Debug, Clone)]
 pub struct Position {
     pub trades: Vec<Trade>,
-    pub asset: Asset,
+    pub asset: Asset, // FIXME: could cause bugs if there are multiple asset types.
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -29,15 +29,84 @@ impl ::std::fmt::Display for PositionState {
     }
 }
 
+fn get_trades_for_qty(trades: &Vec<Trade>, qty: f64) -> Vec<Trade> {
+    let trades: Vec<Trade> = trades.iter().cloned().rev().collect();
+    let mut position_trades: Vec<Trade> = Vec::new();
+    let mut remaining_qty = qty;
+    // let trade_type = trades.first().expect("need a trade type").
+
+    for trade in trades.clone() {
+        if remaining_qty.round() <= 0.0 {
+            break;
+        }
+
+        match trade.trade_type {
+            TradeType::Buy => {
+                remaining_qty = remaining_qty - trade.qty;
+            }
+            TradeType::Sell => {
+                remaining_qty = remaining_qty + trade.qty;
+            }
+        };
+
+        position_trades.push(trade.clone());
+    }
+
+    position_trades
+}
+
 impl Position {
     pub fn new(trades: Vec<Trade>, asset: Asset) -> CoreResult<Self> {
-        match pop_recent_trade_pair(trades.clone()) {
-            Some(trades) => Ok(Position { trades, asset }),
-            None => Err(Box::new(TrailerError::Generic(format!(
-                "could not find trades: {:?}",
-                trades
-            )))),
-        }
+        // let mut asset_qty = asset.amount;
+        // let mut position_trades: Vec<Trade> = Vec::new();
+
+        // // let grouped_trades = group_trades_by_trade_type_pair()
+
+        // for trade in trades {
+        //     if asset_qty < 0. {
+        //         break;
+        //     }
+
+        //     match trade.trade_type {
+        //         TradeType::Buy => {
+        //             asset_qty = asset_qty - trade.qty;
+        //         }
+        //         TradeType::Sell => {
+        //             asset_qty = asset_qty + trade.qty;
+        //         }
+        //     };
+
+        //     println!(
+        //         "asset_qty is now: {} for {} (wallet qty: {})",
+        //         asset_qty.clone(),
+        //         trade.pair.clone(),
+        //         asset.amount,
+        //     );
+
+        //     position_trades.push(trade.clone());
+
+        //     // asset_qty = asset_qty - trade.qty;
+        // }
+
+        // while asset_qty > 0. {
+        //     if let Some(trade) = trades.first() {
+        //         asset_qty = asset_qty - trade.qty;
+
+        //         println!(
+        //             "asset_qty is now: {} for {} (wallet qty: {})",
+        //             asset_qty.clone(),
+        //             trade.pair.clone(),
+        //             asset.amount,
+        //         );
+
+        //         position_trades.push(trade.clone());
+        //     }
+        // }
+
+        Ok(Position {
+            trades: get_trades_for_qty(&trades, asset.amount),
+            asset,
+        })
     }
 
     pub fn symbol(&self) -> String {
@@ -48,11 +117,10 @@ impl Position {
     }
 
     pub fn entry_price(&self) -> f64 {
-        self.buy_trades()
-            .into_iter()
-            .map(|o| o.price * o.qty)
-            .sum::<f64>()
-            / self.buy_trades().into_iter().map(|o| o.qty).sum::<f64>()
+        let entry_prices: f64 = self.buy_trades().into_iter().map(|o| o.price * o.qty).sum();
+        let total_qty: f64 = self.buy_trades().into_iter().map(|o| o.qty).sum();
+
+        entry_prices / total_qty
     }
 
     pub fn exit_price(&self) -> Option<f64> {
@@ -127,7 +195,9 @@ impl Position {
     }
 
     pub fn remaining_qty(&self) -> f64 {
-        self.buy_qty() - self.sell_qty()
+        // println!("remaining_qty: {}", self.asset.amount);
+        self.asset.amount
+        // self.buy_qty() - self.sell_qty()
     }
 
     pub fn state(&self) -> PositionState {
@@ -137,6 +207,10 @@ impl Position {
     pub fn current_profit_as_percent(&self) -> f64 {
         // log::info!("{} {}, {}", self.trade_type, self.entry_price(), self.current_price());
         price_percent(self.entry_price(), self.current_price())
+    }
+
+    pub fn base_type(&self) -> Option<AssetType> {
+        self.trades.first().map(|t| t.pair.base_type())
     }
 }
 

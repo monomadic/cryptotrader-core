@@ -13,7 +13,12 @@ pub trait ExchangeAPI {
     fn btc_symbol(&self) -> String;
     fn usd_symbol(&self) -> String;
     fn base_pairs(&self) -> Vec<String>;
-    fn btc_price(&self) -> CoreResult<Pair>;
+    // fn btc_price(&self) -> CoreResult<Pair>;
+
+    fn btc_price(&self, pairs: &Vec<Pair>) -> Option<f64> {
+        self.btc_pair(pairs.clone()).map(|p| p.price) // todo: tech debt
+    }
+
     fn balances(&self) -> CoreResult<Vec<Asset>>;
     fn pair(&self, pair: &str) -> CoreResult<Pair>;
     fn all_pairs(&self) -> CoreResult<Vec<Pair>>;

@@ -30,18 +30,17 @@ impl PositionPresenter {
         self.position.qty()
     }
 
-    // delete
-    pub fn price_in_btc(&self) -> f64 {
+    pub fn current_price_in_btc(&self) -> f64 {
         find_pair_by_symbol_and_base(&self.symbol(), "BTC", self.pairs.clone())
             .map(|p| p.price)
             .unwrap_or(0.0)
     }
 
-    // delete
-    pub fn price_in_usd(&self) -> f64 {
+    // note: maybe discriminate based on trade types...
+    pub fn current_price_in_usd(&self) -> f64 {
         find_pair_by_symbol_and_base(&self.symbol(), "USDT", self.pairs.clone())
             .map(|p| p.price)
-            .unwrap_or(0.0)
+            .unwrap_or(self.current_price_in_btc() * self.btc_price_in_usd)
     }
 
     pub fn symbol(&self) -> String {
@@ -68,7 +67,7 @@ impl PositionPresenter {
 
     // delete
     pub fn current_value_in_btc(&self) -> f64 {
-        self.qty() * self.price_in_btc()
+        self.qty() * self.current_price_in_btc()
     }
 
     // delete
@@ -76,18 +75,34 @@ impl PositionPresenter {
         self.current_value_in_btc() * self.btc_price_in_usd
     }
 
+    pub fn entry_price_in_btc(&self) -> f64 {
+        //fixme: tech debt
+        match self.position.base_type().unwrap_or(AssetType::Bitcoin) {
+            AssetType::Bitcoin => self.position.entry_price(),
+            _ => self.position.entry_price() / self.btc_price_in_usd,
+        }
+    }
+
+    pub fn entry_price_in_usd(&self) -> f64 {
+        //fixme: tech debt
+        match self.position.base_type().unwrap_or(AssetType::Bitcoin) {
+            AssetType::Fiat => self.position.entry_price(),
+            _ => self.position.entry_price() * self.btc_price_in_usd,
+        }
+    }
+
     pub fn percent_change(&self) -> f64 {
-        price_percent(self.position.entry_price(), self.price_in_btc())
+        price_percent(self.entry_price_in_btc(), self.current_price_in_btc())
     }
 
     /// price of remaining units at the current price - those units at buy price
     pub fn unrealised_profit_btc(&self) -> f64 {
-        ((self.price_in_btc() * self.position.remaining_qty())
-            - (self.position.entry_price() * self.position.remaining_qty()))
+        (self.current_price_in_btc() - self.entry_price_in_btc()) * self.position.remaining_qty()
     }
 
     pub fn unrealised_profit_usd(&self) -> f64 {
-        self.unrealised_profit_btc() * self.btc_price_in_usd
+        (self.current_price_in_usd() * self.position.remaining_qty())
+            - (self.entry_price_in_usd() * self.position.remaining_qty())
     }
 
     pub fn realised_profit_btc(&self) -> f64 {
@@ -100,7 +115,7 @@ impl PositionPresenter {
     }
 
     pub fn realised_profit_usd(&self) -> f64 {
-        self.realised_profit_btc() * self.price_in_usd()
+        self.realised_profit_btc() * self.current_price_in_usd() // WRONG
     }
 
     pub fn realised_profit_percent(&self) -> f64 {

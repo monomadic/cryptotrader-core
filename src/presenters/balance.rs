@@ -7,27 +7,18 @@ pub struct BalancePresenter {
 }
 
 impl BalancePresenter {
-    // pub fn total_value_in_btc(&self) -> Option<f64> {
-    //     log::info!(
-    //         "total_value_in_btc {:#?}",
-    //         find_first_btc_usd_pair(self.pairs.clone())
-    //     );
-    //     find_first_btc_usd_pair(self.pairs.clone()).map(|p| p.price)
-    // }
-
     // todo: this doesn't need to be an option does it?
     pub fn total_value_in_btc(&self) -> f64 {
+        let btc_price = Pair::find_first_btc_usd_pair(&self.pairs)
+            .map(|p| p.price)
+            .unwrap_or(0.0);
+
         self.assets
             .iter()
             .map({
                 |asset| match asset.asset_type() {
                     AssetType::Bitcoin => asset.amount,
-                    AssetType::Fiat => {
-                        asset.amount
-                            / Pair::find_first_btc_usd_pair(&self.pairs)
-                                .map(|p| p.price)
-                                .unwrap_or(0.0)
-                    }
+                    AssetType::Fiat => asset.amount / btc_price,
                     AssetType::Altcoin => {
                         Pair::find_first_btc_pair_for_symbol(&asset.symbol, self.pairs.clone())
                             .map(|p| p.price)
@@ -57,10 +48,37 @@ impl BalancePresenter {
     }
 
     pub fn total_value_in_usd(&self) -> f64 {
-        self.total_value_in_btc()
-            * Pair::find_first_btc_usd_pair(&self.pairs)
-                .map(|p| p.price)
-                .unwrap_or(0.0)
+        let btc_price = Pair::find_first_btc_usd_pair(&self.pairs)
+            .map(|p| p.price)
+            .unwrap_or(0.0);
+
+        self.assets
+            .iter()
+            .map({
+                |asset| match asset.asset_type() {
+                    AssetType::Bitcoin => asset.amount * btc_price,
+                    AssetType::Fiat => asset.amount,
+                    AssetType::Altcoin => {
+                        Pair::find_first_fiat_pair_for_symbol(&asset.symbol, self.pairs.clone())
+                            .map(|p| p.price)
+                            .unwrap_or(
+                                Pair::find_first_btc_pair_for_symbol(
+                                    &asset.symbol,
+                                    self.pairs.clone(),
+                                )
+                                .map(|p| p.price * btc_price)
+                                .unwrap_or(0.0),
+                            )
+                            * asset.amount
+                    }
+                }
+            })
+            .sum()
+
+        // self.total_value_in_btc()
+        //     * Pair::find_first_btc_usd_pair(&self.pairs)
+        //         .map(|p| p.price)
+        //         .unwrap_or(0.0)
     }
 
     // pub fn asset_presenters(&self) -> Vec<AsssetPresener> {
