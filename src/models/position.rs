@@ -103,6 +103,13 @@ impl Position {
         //     }
         // }
 
+        if trades.is_empty() {
+            return Err(Box::new(TrailerError::Generic(format!(
+                "cannot create a position for {} without trades.",
+                asset
+            ))));
+        };
+
         Ok(Position {
             trades: get_trades_for_qty(&trades, asset.amount),
             asset,
