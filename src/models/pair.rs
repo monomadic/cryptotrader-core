@@ -7,6 +7,12 @@ pub struct Pair {
     pub price: f64,
 }
 
+#[derive(Debug, Clone)]
+pub struct Price {
+    pub symbol: Pair,
+    pub price: f64,
+}
+
 use std::{fmt, fmt::Display};
 impl Display for Pair {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -100,6 +106,14 @@ impl Pair {
 
     pub fn btc_price(pairs: Vec<Pair>) -> Option<f64> {
         Pair::find_first_btc_usd_pair(&pairs).map(|p| p.price)
+    }
+
+    pub fn price_in_fiat(symbol: &str, pairs: &Vec<Pair>) -> Option<f64> {
+        Pair::find_first_fiat_pair_for_symbol(symbol, pairs.clone()).map(|p| p.price)
+    }
+
+    pub fn price_in_btc(symbol: &str, pairs: &Vec<Pair>) -> Option<f64> {
+        Pair::find_first_btc_pair_for_symbol(symbol, pairs.clone()).map(|p| p.price)
     }
 }
 

@@ -20,6 +20,16 @@ pub struct TradePair {
     sell: Option<Trade>,
 }
 
+impl TradePair {
+    pub fn to_vec(&self) -> Vec<Trade> {
+        if let Some(sell) = self.sell.clone() {
+            vec![self.buy.clone(), sell]
+        } else {
+            vec![self.buy.clone()]
+        }
+    }
+}
+
 impl Trade {
     pub fn entry_price(&self) -> f64 {
         self.price
@@ -79,6 +89,84 @@ impl Trade {
     // TODO ALIAS - delete
     pub fn profit(&self) -> f64 {
         self.current_profit()
+    }
+
+    // grouping strategy that attempts to group until an asset reaches zero. buggy at the moment.
+    pub fn group_by_qty(trades: &Vec<Trade>, qty: f64) -> Vec<Trade> {
+        let trades: Vec<Trade> = trades.iter().cloned().rev().collect();
+        let mut position_trades: Vec<Trade> = Vec::new();
+        let mut remaining_qty = qty;
+        // let trade_type = trades.first().expect("need a trade type").
+
+        for trade in trades.clone() {
+            if remaining_qty.round() <= 0.0 {
+                break;
+            }
+
+            match trade.trade_type {
+                TradeType::Buy => {
+                    remaining_qty = remaining_qty - trade.qty;
+                }
+                TradeType::Sell => {
+                    remaining_qty = remaining_qty + trade.qty;
+                }
+            };
+
+            position_trades.push(trade.clone());
+        }
+
+        position_trades
+    }
+
+    // grouping strategy that collapses trades together until the last buy/sell
+    pub fn group_by_price(trades: Vec<Trade>) -> Vec<Trade> {
+        group_trades_by_price(trades)
+    }
+
+    /// group trades into buy-sell buy-sell buy-sell
+    pub fn group_by_trade_pair(trades: Vec<Trade>) -> Vec<TradePair> {
+        let mut trade_pairs: Vec<TradePair> = Vec::new();
+
+        // organise trades by time
+        let mut trades = trades.clone();
+        trades.sort_by(|a, b| a.time.cmp(&b.time));
+
+        // group trades into vec<buy, sell>
+        trades = group_and_average_trades_by_trade_type(trades);
+
+        // reverse the list
+        let mut trades: Vec<Trade> = trades.into_iter().rev().collect();
+
+        while let Some(trade) = trades.pop() {
+            if trade.trade_type == TradeType::Buy {
+                trade_pairs.push(TradePair {
+                    buy: trade,
+                    sell: trades.pop(),
+                })
+            }
+        }
+
+        // let mut current_trade_pair: TradePair = TradePair {
+        //     buy: trades.first().unwrap().clone(),
+        //     sell: None,
+        // }; // fix this
+
+        // while let Some(last_trade) = trades.pop() {
+        //     match last_trade.trade_type {
+        //         TradeType::Buy => {
+        //             current_trade_pair = TradePair {
+        //                 buy: last_trade,
+        //                 sell: None,
+        //             }
+        //         }
+        //         TradeType::Sell => {
+        //             current_trade_pair.sell = Some(last_trade);
+        //             trade_pairs.push(current_trade_pair.clone());
+        //         }
+        //     }
+        // }
+
+        trade_pairs
     }
 }
 
@@ -175,39 +263,6 @@ pub fn group_trades_by_trade_type(trades: Vec<Trade>) -> Vec<Vec<Trade>> {
 }
 
 /// group trades into buy-sell buy-sell buy-sell
-pub fn group_trades_by_trade_type_pair(trades: Vec<Trade>) -> Vec<TradePair> {
-    let mut trade_pairs: Vec<TradePair> = Vec::new();
-    // organise trades by time
-
-    // group trades into vec<buy, sell>
-
-    // reverse the list
-    let mut trades: Vec<Trade> = trades.into_iter().rev().collect();
-
-    let mut current_trade_pair: TradePair = TradePair {
-        buy: trades.first().unwrap().clone(),
-        sell: None,
-    }; // fix this
-
-    while let Some(last_trade) = trades.pop() {
-        match last_trade.trade_type {
-            TradeType::Buy => {
-                current_trade_pair = TradePair {
-                    buy: last_trade,
-                    sell: None,
-                }
-            }
-            TradeType::Sell => {
-                current_trade_pair.sell = Some(last_trade);
-                trade_pairs.push(current_trade_pair.clone());
-            }
-        }
-    }
-
-    trade_pairs
-}
-
-/// group trades into buy-sell buy-sell buy-sell
 pub fn _group_trades_by_trade_type_pair(trades: Vec<Trade>) -> Vec<Vec<Trade>> {
     let mut positions = Vec::new();
     let mut current_trades: Vec<Trade> = Vec::new();
@@ -238,6 +293,7 @@ pub fn _group_trades_by_trade_type_pair(trades: Vec<Trade>) -> Vec<Vec<Trade>> {
     positions
 }
 
+// TODO: move into model
 /// group trades with the same price together
 pub fn group_trades_by_price(trades: Vec<Trade>) -> Vec<Trade> {
     let mut grouped_trades = Vec::new();
@@ -256,11 +312,3 @@ pub fn group_trades_by_price(trades: Vec<Trade>) -> Vec<Trade> {
     grouped_trades.push(current_trade.clone());
     grouped_trades
 }
-
-// // get the last BUY, or BUY-SELL pair
-// pub fn pop_recent_trade_pair(trades: Vec<Trade>) -> Vec<Trade> {
-//     group_trades_by_trade_type_pair(trades)
-//         .last()
-//         .map(|t| t.clone())
-//         .unwrap_or(Vec::new())
-// }
