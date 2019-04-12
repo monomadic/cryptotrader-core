@@ -6,10 +6,10 @@ This library has been in a semi-working, messy alpha state for over a year now, 
 The api wrappers currently implemented in rust I found to be quite buggy and not complete for what I needed. I extended some and submit various PRs but I think in the end I will be just using the forks found here.
 
 Currently supports
-- binance
+- [binance](/robsaunders/binance-rs)
 
 Coming soon:
-- huobi
+- [binance](/robsaunders/huobi-rs)
 - kucoin
 - ?
 
