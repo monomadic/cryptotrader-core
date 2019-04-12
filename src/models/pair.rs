@@ -4,7 +4,7 @@
 pub struct Pair {
     pub base: String,
     pub symbol: String,
-    pub price: f64,
+    pub price: f64, // todo remove
 }
 
 #[derive(Debug, Clone)]

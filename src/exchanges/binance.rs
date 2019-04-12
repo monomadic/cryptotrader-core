@@ -304,6 +304,7 @@ impl ExchangeAPI for BinanceAPI {
     fn trades_for_symbol(&self, symbol: &str, pairs: Vec<Pair>) -> CoreResult<Vec<Trade>> {
         info!("BINANCE: trades_for_symbol({})", symbol);
 
+        let symbol = symbol.to_uppercase();
         let pairs = Pair::base_pairs_for_symbol(&symbol, &pairs);
 
         let mut trades = Vec::new();

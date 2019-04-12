@@ -34,6 +34,7 @@ pub trait ExchangeAPI {
 
     // default implementations
 
+    // todo: totally unnecessary if pair does not contain price.
     fn btc_pair(&self, pairs: Vec<Pair>) -> Option<Pair> {
         find_pair_by_symbol_and_base(&self.btc_symbol(), &self.usd_symbol(), pairs)
     }
