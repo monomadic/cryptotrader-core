@@ -115,7 +115,6 @@ impl Position {
     }
 
     pub fn current_profit_as_percent(&self) -> f64 {
-        // log::info!("{} {}, {}", self.trade_type, self.entry_price(), self.current_price());
         price_percent(self.entry_price(), self.current_price())
     }
 

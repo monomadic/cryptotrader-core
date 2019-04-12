@@ -42,26 +42,13 @@ pub trait ExchangeAPI {
             base: self.usd_symbol(),
         }
     }
-
-    // fn btc_price(&self, prices: &Vec<Price>) -> Option<f64> {
-    //     self.btc_pair(pairs.clone()).map(|p| p.price) // todo: tech debt
-    // }
-
-    // fn usd_pair(&self, pairs: Vec<Pair>) -> Option<Pair> {
-    //     find_pair_by_symbol_and_base(&self.usd_symbol(), &self.btc_symbol(), pairs)
-    // }
-
-    // TODO: introduce client caching for pairs
-    // fn fiat_pair_for(&self, symbol: &str, pairs: Vec<Pair>) -> Option<Pair> {
-    //     find_pair_by_symbol_and_base(symbol, &self.usd_symbol(), pairs)
-    // }
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub enum Exchange {
     Unknown,
-    Bittrex,
     Binance,
+    Huobi,
     Kucoin,
 }
 
@@ -72,7 +59,7 @@ impl std::str::FromStr for Exchange {
         match s {
             "unknown" => Ok(Exchange::Unknown),
             "-" => Ok(Exchange::Unknown),
-            "bittrex" => Ok(Exchange::Bittrex),
+            "huobi" => Ok(Exchange::Huobi),
             "binance" => Ok(Exchange::Binance),
             "kucoin" => Ok(Exchange::Binance),
             _ => Err(()),
@@ -84,8 +71,8 @@ use std::string::ToString;
 impl ToString for Exchange {
     fn to_string(&self) -> String {
         match self {
-            &Exchange::Bittrex => "bittrex".into(),
             &Exchange::Binance => "binance".into(),
+            &Exchange::Huobi => "huobi".into(),
             &Exchange::Kucoin => "kucoin".into(),
             _ => "-".into(),
         }

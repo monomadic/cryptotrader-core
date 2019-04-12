@@ -5,13 +5,7 @@ use crate::utils::*;
 use crate::{error::*, exchanges::*, models::*};
 use log::info;
 
-use binance_api::{
-    account::*,
-    api::*,
-    market::*,
-    model::{DepthOrderBookEvent, OrderBook, TradesEvent},
-    websockets::*,
-};
+use binance_api::{account::*, api::*, market::*};
 
 #[derive(Clone)]
 pub struct BinanceAPI {
@@ -19,38 +13,11 @@ pub struct BinanceAPI {
     market: Market,
 }
 
-pub struct BinanceWS {
-    socket: WebSockets,
-}
-
 pub static BASE_PAIRS: [&str; 10] = [
     "USDT", "BTC", "ETH", "USDC", "TUSD", "BNB", "USDS", "BNB", "PAX", "XRP",
 ];
-// pub static BASE_PAIRS: [&str; 2] = ["USDT", "BTC"];
 pub static BTC_SYMBOL: &str = "BTC";
 pub static USD_SYMBOL: &str = "USDT";
-
-struct BinanceWebSocketHandler;
-
-impl MarketEventHandler for BinanceWebSocketHandler {
-    fn aggregated_trades_handler(&self, event: &TradesEvent) {
-        println!(
-            "- Symbol: {}, price: {}, qty: {}",
-            event.symbol, event.price, event.qty
-        );
-    }
-    fn depth_orderbook_handler(&self, model: &DepthOrderBookEvent) {}
-    fn partial_orderbook_handler(&self, model: &OrderBook) {}
-}
-
-impl BinanceAPI {
-    pub fn connect(api_key: &str, secret_key: &str) -> Self {
-        Self {
-            account: Binance::new(Some(api_key.to_string()), Some(secret_key.to_string())),
-            market: Market::new(None, None),
-        }
-    }
-}
 
 impl ExchangeAPI for BinanceAPI {
     fn display(&self) -> String {
@@ -319,24 +286,8 @@ impl ExchangeAPI for BinanceAPI {
 
         // sort by time
         trades.sort_by(|a, b| a.time.cmp(&b.time));
-
         Ok(trades)
     }
-
-    // fn trades_for(&self, symbol: &str) -> CoreResult<Vec<Order>> {
-    //     Ok(self
-    //         .account
-    //         .trade_history(symbol)?
-    //         .into_iter()
-    //         .map(|order| Order {
-    //             id: order.id.to_string(),
-    //             symbol: symbol.to_string(),
-    //             order_type: TradeType::is_buy(order.is_buyer),
-    //             qty: order.qty,
-    //             price: order.price,
-    //         })
-    //         .collect())
-    // }
 
     fn chart_data(&self, pair: &str, interval: &str) -> CoreResult<Vec<Candlestick>> {
         Ok(self
@@ -356,20 +307,12 @@ impl ExchangeAPI for BinanceAPI {
     }
 }
 
-pub fn ws(symbol: String) {
-    println!("attempting to connect to binance with symbol: {}", symbol);
-    let agg_trade: String = format!("{}@aggTrade", symbol);
-    let mut web_socket: WebSockets = WebSockets::new();
-
-    web_socket.add_market_handler(BinanceWebSocketHandler);
-    web_socket.connect(&agg_trade).unwrap(); // check error
-    web_socket.event_loop();
-}
-
-pub fn connect(api_key: &str, secret_key: &str) -> BinanceAPI {
-    BinanceAPI {
-        account: Binance::new(Some(api_key.to_string()), Some(secret_key.to_string())),
-        market: Market::new(None, None),
+impl BinanceAPI {
+    pub fn new(api_key: &str, secret_key: &str) -> Self {
+        BinanceAPI {
+            account: Binance::new(Some(api_key.to_string()), Some(secret_key.to_string())),
+            market: Market::new(None, None),
+        }
     }
 }
 

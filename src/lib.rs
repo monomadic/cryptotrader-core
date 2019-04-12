@@ -1,7 +1,6 @@
 pub mod config;
 pub mod error;
 pub mod exchanges;
-pub mod threadpool;
 pub(crate) mod utils;
 
 pub mod models {
@@ -36,26 +35,6 @@ pub mod presenters {
 
     pub use self::{asset::*, balance::*, order::*, position::*, trade_presenter::*};
 }
-
-// pub mod indicators {
-//     pub mod bbands;
-//     pub mod macd;
-//     pub mod ote;
-//     pub mod rsi;
-//     pub mod sma;
-
-//     pub use self::{bbands::*, macd::*, ote::*, rsi::*, sma::*};
-// }
-
-// pub mod socket {
-//     pub mod binance;
-//     pub use self::binance::BinanceWS;
-
-//     #[derive(Debug)]
-//     pub enum Event {
-//         PriceChange(String, f64, f64),
-//     }
-// }
 
 pub static KNOWN_STABLECOIN_SYMBOLS: [&str; 3] = ["USDT", "USD", "TUSD"];
 pub static KNOWN_BTC_SYMBOLS: [&str; 2] = ["XBT", "BTC"];

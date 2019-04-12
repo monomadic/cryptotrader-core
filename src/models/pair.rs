@@ -2,7 +2,6 @@
 pub struct Pair {
     pub base: String,
     pub symbol: String,
-    // pub price: f64, // todo remove
 }
 
 use crate::models::price::Price;
@@ -86,18 +85,6 @@ impl Pair {
             .into_iter()
             .find(|p| p.symbol == symbol && AssetType::from_symbol(&p.base) == AssetType::Fiat)
     }
-
-    //    pub fn btc_price(prices: Vec<Price>) -> Option<f64> {
-    //        Price::find_first_btc_usd_price(&prices).map(|p| p.price)
-    //    }
-
-    // pub fn price_in_fiat(symbol: &str, prices: &Vec<Price>) -> Option<f64> {
-    //     Pair::find_first_fiat_pair_for_symbol(symbol, prices.clone()).map(|p| p.price)
-    // }
-
-    // pub fn price_in_btc(symbol: &str, prices: &Vec<Price>) -> Option<f64> {
-    //     Pair::find_first_btc_pair_for_symbol(symbol, prices.clone()).map(|p| p.price)
-    // }
 }
 
 pub fn filter_pairs_by_asset_type(asset_type: AssetType, pairs: Vec<Pair>) -> Vec<Pair> {
@@ -107,26 +94,11 @@ pub fn filter_pairs_by_asset_type(asset_type: AssetType, pairs: Vec<Pair>) -> Ve
         .collect()
 }
 
-// todo: remove
-// pub fn find_all_pairs_by_symbol(symbol: &str, pairs: Vec<Pair>) -> Vec<Pair> {
-//     Pair::base_pairs_for_symbol(symbol, pairs)
-// }
-
 pub fn find_pair_by_symbol_and_base(symbol: &str, base: &str, pairs: Vec<Pair>) -> Option<Pair> {
     pairs
         .into_iter()
         .find({ |p| p.symbol == symbol.to_string() && p.base == base.to_string() })
 }
-
-// // todo: remove
-// pub fn find_first_btc_usd_pair(pairs: Vec<Pair>) -> Option<Pair> {
-//     Pair::find_first_btc_usd_pair(&pairs)
-// }
-
-// // todo: remove
-// pub fn find_first_btc_pair_for_symbol(symbol: &str, pairs: Vec<Pair>) -> Option<Pair> {
-//     Pair::find_first_btc_pair_for_symbol(symbol, pairs)
-// }
 
 type PairMap = HashMap<String, Vec<Pair>>;
 use std::collections::HashMap;
@@ -154,32 +126,3 @@ pub fn filter_pairmap_by_symbols(pairs: PairMap, symbols: Vec<&str>) -> PairMap 
 pub fn convert_currency(amount: f64, from: Price, to: Price) -> Option<f64> {
     Some((from.price / to.price) * amount)
 }
-
-// pub fn convert_currency_via(amount: f64, from: Pair, to: Pair, via: Pair) -> Option<f64> {
-//     // let from_currency = from.price;
-//     // let to_currency = via.price;
-//     // let via_currency = via.price;
-
-//     // if from.symbol == to.symbol {
-//     //     Some((from.price / to.price) * amount)
-//     // } else {
-//     //     None
-//     // }
-
-//     Some(from.price / to.price / via.price)
-// }
-
-// pub fn price_in(symbol: &str, base: &str, pairs: Vec<Pair>) -> Option<f64> {
-
-//     if let symbol = find_pair_by_symbol_and_base(symbol, base)
-
-//     let source_pairs = find_all_pairs_by_symbol(symbol);
-
-//     let pairmap = sort_pairs(pairs);
-
-//     if let Some(pair) = orders.entry(symbol) {
-
-//     } else {
-
-//     }
-// }
