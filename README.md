@@ -9,7 +9,7 @@ Currently supports
 - [binance](/robsaunders/binance-rs)
 
 Coming soon:
-- [binance](/robsaunders/huobi-rs)
+- [huobi](/robsaunders/huobi-rs)
 - kucoin
 - ?
 
