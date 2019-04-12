@@ -28,7 +28,11 @@ impl Position {
     }
 
     pub fn entry_price(&self) -> f64 {
-        let entry_prices: f64 = self.buy_trades().into_iter().map(|o| o.price * o.qty).sum();
+        let entry_prices: f64 = self
+            .buy_trades()
+            .into_iter()
+            .map(|o| o.sale_price * o.qty)
+            .sum();
         let total_qty: f64 = self.buy_trades().into_iter().map(|o| o.qty).sum();
 
         entry_prices / total_qty
@@ -37,7 +41,10 @@ impl Position {
     pub fn exit_price(&self) -> Option<f64> {
         if self.sell_trades().len() > 0 {
             Some(
-                self.sell_trades().into_iter().map(|t| t.price).sum::<f64>()
+                self.sell_trades()
+                    .into_iter()
+                    .map(|t| t.sale_price)
+                    .sum::<f64>()
                     / self.sell_trades().len() as f64,
             )
         } else {
@@ -46,11 +53,12 @@ impl Position {
     }
 
     pub fn current_price(&self) -> f64 {
-        self.buy_trades()
-            .into_iter()
-            .map(|o| o.pair.price)
-            .sum::<f64>()
-            / self.buy_trades().len() as f64
+        0.0 // todo: fix to include most recent price
+            //        self.buy_trades()
+            //            .into_iter()
+            //            .map(|o| o.pair.price)
+            //            .sum::<f64>()
+            //            / self.buy_trades().len() as f64
     }
 
     pub fn qty(&self) -> f64 {

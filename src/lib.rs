@@ -19,6 +19,8 @@ pub mod models {
     pub use self::position::*;
     mod pair;
     pub use self::pair::*;
+    mod price;
+    pub use self::price::*;
     mod book_ticker;
     pub use self::book_ticker::*;
     mod depth;
@@ -35,25 +37,25 @@ pub mod presenters {
     pub use self::{asset::*, balance::*, order::*, position::*, trade_presenter::*};
 }
 
-pub mod indicators {
-    pub mod bbands;
-    pub mod macd;
-    pub mod ote;
-    pub mod rsi;
-    pub mod sma;
+// pub mod indicators {
+//     pub mod bbands;
+//     pub mod macd;
+//     pub mod ote;
+//     pub mod rsi;
+//     pub mod sma;
 
-    pub use self::{bbands::*, macd::*, ote::*, rsi::*, sma::*};
-}
+//     pub use self::{bbands::*, macd::*, ote::*, rsi::*, sma::*};
+// }
 
-pub mod socket {
-    pub mod binance;
-    pub use self::binance::BinanceWS;
+// pub mod socket {
+//     pub mod binance;
+//     pub use self::binance::BinanceWS;
 
-    #[derive(Debug)]
-    pub enum Event {
-        PriceChange(String, f64, f64),
-    }
-}
+//     #[derive(Debug)]
+//     pub enum Event {
+//         PriceChange(String, f64, f64),
+//     }
+// }
 
 pub static KNOWN_STABLECOIN_SYMBOLS: [&str; 3] = ["USDT", "USD", "TUSD"];
 pub static KNOWN_BTC_SYMBOLS: [&str; 2] = ["XBT", "BTC"];

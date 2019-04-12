@@ -1,7 +1,7 @@
-use crate::common::*;
-use cryptotrader::{models::*, presenters::*};
-
-mod common;
+//use crate::common::*;
+//use cryptotrader::{models::*, presenters::*};
+//
+//mod common;
 // trade_fixture(100.0, 150.0, 5.0, TradeType::Buy);
 // #[test]
 // fn test_position_presenter_price_and_value() {

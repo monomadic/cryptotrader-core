@@ -56,9 +56,11 @@ impl ExchangeAPI for BinanceAPI {
     fn display(&self) -> String {
         "Binance".to_string()
     }
+
     fn btc_symbol(&self) -> String {
         BTC_SYMBOL.into()
     }
+
     fn usd_symbol(&self) -> String {
         USD_SYMBOL.into()
     }
@@ -131,7 +133,6 @@ impl ExchangeAPI for BinanceAPI {
         Ok(Pair {
             symbol: symbol.to_string(),
             base: base.to_string(),
-            price,
         })
     }
 
@@ -140,27 +141,30 @@ impl ExchangeAPI for BinanceAPI {
 
         Ok(prices
             .into_iter()
-            .map(|pair| self.string_to_pair(pair.symbol, pair.price))
+            .map(|pair| string_to_pair(&pair.symbol))
             .filter(|r| r.is_some())
             .map(|r| r.unwrap())
             .collect())
     }
 
-    fn pair_format(&self, pair: Pair) -> String {
-        // pair_to_string()?
-        format!("{}{}", pair.symbol, pair.base)
+    fn all_prices(&self) -> CoreResult<Vec<Price>> {
+        let binance_api::model::Prices::AllPrices(prices) = self.market.get_all_prices()?;
+
+        Ok(prices
+            .into_iter()
+            .map(|price| {
+                string_to_pair(&price.symbol).map(|pair| Price {
+                    pair: pair,
+                    price: price.price,
+                })
+            })
+            .filter(|r| r.is_some())
+            .map(|r| r.unwrap())
+            .collect())
     }
 
     fn symbol_and_base_to_pair_format(&self, symbol: &str, base: &str) -> String {
         format!("{}{}", symbol, base)
-    }
-
-    fn string_to_pair(&self, pair: String, price: f64) -> Option<Pair> {
-        split_symbol_and_base(&pair).map(|(symbol, base)| Pair {
-            base,
-            price,
-            symbol,
-        })
     }
 
     fn book_tickers(&self) -> CoreResult<Vec<BookTicker>> {
@@ -177,7 +181,6 @@ impl ExchangeAPI for BinanceAPI {
                     pair: Pair {
                         symbol: symbol,
                         base: base,
-                        price: ticker.ask_price,
                     },
                     bid_price: ticker.bid_price,
                     bid_qty: ticker.bid_qty,
@@ -210,7 +213,7 @@ impl ExchangeAPI for BinanceAPI {
         Err(Box::new(TrailerError::Unsupported))
     }
 
-    fn open_orders(&self, pairs: Vec<Pair>) -> CoreResult<Vec<Order>> {
+    fn open_orders(&self) -> CoreResult<Vec<Order>> {
         fn parse_order_type(order_type: &str) -> OrderType {
             match order_type {
                 "LIMIT" => OrderType::Limit,
@@ -238,19 +241,21 @@ impl ExchangeAPI for BinanceAPI {
             // let pair = self
             //     .string_to_pair(order.symbol.to_string(), 0.0)
             //     .ok_or(TrailerError::PairNotFound(order.symbol.clone()))?;
+            let pair = string_to_pair(&order.symbol)
+                .ok_or(TrailerError::PairNotFound(order.symbol.to_string()))?;
 
             let (symbol, base) = split_symbol_and_base(&order.symbol)
                 .ok_or(TrailerError::PairNotFound(order.symbol.clone()))?;
 
-            let pair = find_pair_by_symbol_and_base(&symbol, &base, pairs.clone())
-                .ok_or(TrailerError::PairNotFound(order.symbol.clone()))?;
+            // let pair = find_pair_by_symbol_and_base(&symbol, &base, PRICES.clone())
+            // .ok_or(TrailerError::PairNotFound(order.symbol.clone()))?;
 
             results.push(Order {
                 id: order.order_id.to_string(),
                 pair,
                 order_type: parse_order_type(&order.type_name),
                 trade_type: parse_trade_type(&order.side),
-                price: order.price,
+                purchase_price: order.price,
                 qty: order.orig_qty.parse::<f64>().unwrap(),
                 executed_qty: order.executed_qty.parse::<f64>().unwrap(),
                 time: local_datetime_from_unix(order.time),
@@ -272,12 +277,9 @@ impl ExchangeAPI for BinanceAPI {
 
     /// find all trades for a single trading pair (market).
     fn trades_for_pair(&self, pair: Pair) -> CoreResult<Vec<Trade>> {
-        info!(
-            "BINANCE: trades_for_pair({})",
-            self.pair_format(pair.clone())
-        );
+        info!("BINANCE: trades_for_pair({})", pair.clone());
 
-        let result = self.account.trade_history(self.pair_format(pair.clone()))?;
+        let result = self.account.trade_history(pair_to_string(pair.clone()))?;
         info!("result: {:?}", result);
 
         let mut trades: Vec<Trade> = result
@@ -288,7 +290,7 @@ impl ExchangeAPI for BinanceAPI {
                 pair: pair.clone(),
                 trade_type: TradeType::is_buy(trade.is_buyer),
                 qty: trade.qty,
-                price: trade.price,
+                sale_price: trade.price,
                 fee: trade.commission.parse::<f64>().unwrap_or(0.0),
                 fee_symbol: Some(trade.commission_asset),
             })
@@ -378,4 +380,12 @@ fn split_symbol_and_base(pair: &str) -> Option<(String, String)> {
         };
     }
     None
+}
+
+fn string_to_pair(pair: &str) -> Option<Pair> {
+    split_symbol_and_base(&pair).map(|(symbol, base)| Pair { base, symbol })
+}
+
+fn pair_to_string(pair: Pair) -> String {
+    format!("{}{}", pair.symbol, pair.base)
 }

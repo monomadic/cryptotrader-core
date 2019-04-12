@@ -12,16 +12,17 @@ pub trait ExchangeAPI {
     fn balances(&self) -> CoreResult<Vec<Asset>>;
     fn pair(&self, pair: &str) -> CoreResult<Pair>;
     fn all_pairs(&self) -> CoreResult<Vec<Pair>>;
+    fn all_prices(&self) -> CoreResult<Vec<Price>>;
     fn limit_buy(&self, symbol: &str, amount: f64, price: f64) -> CoreResult<()>;
     fn limit_sell(&self, symbol: &str, amount: f64, price: f64) -> CoreResult<()>;
-    fn open_orders(&self, pairs: Vec<Pair>) -> CoreResult<Vec<Order>>;
+    fn open_orders(&self) -> CoreResult<Vec<Order>>;
     fn past_orders(&self) -> CoreResult<Vec<Order>>;
     fn book_tickers(&self) -> CoreResult<Vec<BookTicker>>;
     fn trades_for_pair(&self, pair: Pair) -> CoreResult<Vec<Trade>>;
     fn trades_for_symbol(&self, symbol: &str, pairs: Vec<Pair>) -> CoreResult<Vec<Trade>>;
     fn chart_data(&self, pair: &str, interval: &str) -> CoreResult<Vec<Candlestick>>;
-    fn pair_format(&self, pair: Pair) -> String;
-    fn string_to_pair(&self, pair: String, price: f64) -> Option<Pair>;
+    // fn pair_to_string(&self, pair: Pair) -> String;
+    // fn string_to_pair(&self, pair: String, price: f64) -> Option<Pair>;
     fn market_depth(&self, pair: &str) -> CoreResult<Depth>;
     fn symbol_and_base_to_pair_format(&self, symbol: &str, base: &str) -> String;
     fn stop_loss(
@@ -34,23 +35,26 @@ pub trait ExchangeAPI {
 
     // default implementations
 
-    // todo: totally unnecessary if pair does not contain price.
-    fn btc_pair(&self, pairs: Vec<Pair>) -> Option<Pair> {
-        find_pair_by_symbol_and_base(&self.btc_symbol(), &self.usd_symbol(), pairs)
+    fn btc_usd_pair(&self) -> Pair {
+        // find_pair_by_symbol_and_base(&self.btc_symbol(), &self.usd_symbol(), pairs)
+        Pair {
+            symbol: self.btc_symbol(),
+            base: self.usd_symbol(),
+        }
     }
 
-    fn btc_price(&self, pairs: &Vec<Pair>) -> Option<f64> {
-        self.btc_pair(pairs.clone()).map(|p| p.price) // todo: tech debt
-    }
+    // fn btc_price(&self, prices: &Vec<Price>) -> Option<f64> {
+    //     self.btc_pair(pairs.clone()).map(|p| p.price) // todo: tech debt
+    // }
 
-    fn usd_pair(&self, pairs: Vec<Pair>) -> Option<Pair> {
-        find_pair_by_symbol_and_base(&self.usd_symbol(), &self.btc_symbol(), pairs)
-    }
+    // fn usd_pair(&self, pairs: Vec<Pair>) -> Option<Pair> {
+    //     find_pair_by_symbol_and_base(&self.usd_symbol(), &self.btc_symbol(), pairs)
+    // }
 
     // TODO: introduce client caching for pairs
-    fn fiat_pair_for(&self, symbol: &str, pairs: Vec<Pair>) -> Option<Pair> {
-        find_pair_by_symbol_and_base(symbol, &self.usd_symbol(), pairs)
-    }
+    // fn fiat_pair_for(&self, symbol: &str, pairs: Vec<Pair>) -> Option<Pair> {
+    //     find_pair_by_symbol_and_base(symbol, &self.usd_symbol(), pairs)
+    // }
 }
 
 #[derive(Debug, Deserialize, Clone)]

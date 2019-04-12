@@ -3,13 +3,13 @@ use crate::models::*;
 #[derive(Debug, Clone)]
 pub struct BalancePresenter {
     pub assets: Vec<Asset>,
-    pub pairs: Vec<Pair>,
+    pub prices: Vec<Price>,
 }
 
 impl BalancePresenter {
     // todo: this doesn't need to be an option does it?
     pub fn total_value_in_btc(&self) -> f64 {
-        let btc_price = Pair::find_first_btc_usd_pair(&self.pairs)
+        let btc_price = Price::find_first_btc_usd_price(&self.prices)
             .map(|p| p.price)
             .unwrap_or(0.0);
 
@@ -20,7 +20,7 @@ impl BalancePresenter {
                     AssetType::Bitcoin => asset.amount,
                     AssetType::Fiat => asset.amount / btc_price,
                     AssetType::Altcoin => {
-                        Pair::find_first_btc_pair_for_symbol(&asset.symbol, self.pairs.clone())
+                        Price::find_first_btc_price_for_symbol(&asset.symbol, self.prices.clone())
                             .map(|p| p.price)
                             .unwrap_or(0.0)
                             * asset.amount
@@ -36,7 +36,7 @@ impl BalancePresenter {
             .map({
                 |asset| match asset.asset_type() {
                     AssetType::Altcoin => {
-                        Pair::find_first_btc_pair_for_symbol(&asset.symbol, self.pairs.clone())
+                        Price::find_first_btc_price_for_symbol(&asset.symbol, self.prices.clone())
                             .map(|p| p.price)
                             .unwrap_or(0.0)
                             * asset.amount
@@ -48,9 +48,7 @@ impl BalancePresenter {
     }
 
     pub fn total_value_in_usd(&self) -> f64 {
-        let btc_price = Pair::find_first_btc_usd_pair(&self.pairs)
-            .map(|p| p.price)
-            .unwrap_or(0.0);
+        let btc_price = Price::find_first_btc_usd_price(&self.prices).map_or(0.0, |p| p.price);
 
         self.assets
             .iter()
@@ -59,15 +57,14 @@ impl BalancePresenter {
                     AssetType::Bitcoin => asset.amount * btc_price,
                     AssetType::Fiat => asset.amount,
                     AssetType::Altcoin => {
-                        Pair::find_first_fiat_pair_for_symbol(&asset.symbol, self.pairs.clone())
+                        Price::find_first_btc_price_for_symbol(&asset.symbol, self.prices.clone())
                             .map(|p| p.price)
                             .unwrap_or(
-                                Pair::find_first_btc_pair_for_symbol(
+                                Price::find_first_btc_price_for_symbol(
                                     &asset.symbol,
-                                    self.pairs.clone(),
+                                    self.prices.clone(),
                                 )
-                                .map(|p| p.price * btc_price)
-                                .unwrap_or(0.0),
+                                .map_or(0.0, |p| p.price * btc_price),
                             )
                             * asset.amount
                     }

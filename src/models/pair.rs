@@ -1,22 +1,15 @@
-// use log::info;
-
 #[derive(Debug, Clone)]
 pub struct Pair {
     pub base: String,
     pub symbol: String,
-    pub price: f64, // todo remove
+    // pub price: f64, // todo remove
 }
 
-#[derive(Debug, Clone)]
-pub struct Price {
-    pub symbol: Pair,
-    pub price: f64,
-}
-
+use crate::models::price::Price;
 use std::{fmt, fmt::Display};
 impl Display for Pair {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}-{}", self.symbol, self.base)
+        write!(f, "{}_{}", self.symbol, self.base)
     }
 }
 
@@ -82,16 +75,6 @@ impl Pair {
             .collect()
     }
 
-    pub fn find_first_btc_usd_pair(pairs: &Vec<Pair>) -> Option<Pair> {
-        pairs
-            .into_iter()
-            .find(|p| {
-                AssetType::from_symbol(&p.symbol) == AssetType::Bitcoin
-                    && AssetType::from_symbol(&p.base) == AssetType::Fiat
-            })
-            .map(|p| p.clone())
-    }
-
     pub fn find_first_btc_pair_for_symbol(symbol: &str, pairs: Vec<Pair>) -> Option<Pair> {
         pairs
             .into_iter()
@@ -104,17 +87,17 @@ impl Pair {
             .find(|p| p.symbol == symbol && AssetType::from_symbol(&p.base) == AssetType::Fiat)
     }
 
-    pub fn btc_price(pairs: Vec<Pair>) -> Option<f64> {
-        Pair::find_first_btc_usd_pair(&pairs).map(|p| p.price)
-    }
+    //    pub fn btc_price(prices: Vec<Price>) -> Option<f64> {
+    //        Price::find_first_btc_usd_price(&prices).map(|p| p.price)
+    //    }
 
-    pub fn price_in_fiat(symbol: &str, pairs: &Vec<Pair>) -> Option<f64> {
-        Pair::find_first_fiat_pair_for_symbol(symbol, pairs.clone()).map(|p| p.price)
-    }
+    // pub fn price_in_fiat(symbol: &str, prices: &Vec<Price>) -> Option<f64> {
+    //     Pair::find_first_fiat_pair_for_symbol(symbol, prices.clone()).map(|p| p.price)
+    // }
 
-    pub fn price_in_btc(symbol: &str, pairs: &Vec<Pair>) -> Option<f64> {
-        Pair::find_first_btc_pair_for_symbol(symbol, pairs.clone()).map(|p| p.price)
-    }
+    // pub fn price_in_btc(symbol: &str, prices: &Vec<Price>) -> Option<f64> {
+    //     Pair::find_first_btc_pair_for_symbol(symbol, prices.clone()).map(|p| p.price)
+    // }
 }
 
 pub fn filter_pairs_by_asset_type(asset_type: AssetType, pairs: Vec<Pair>) -> Vec<Pair> {
@@ -148,11 +131,9 @@ pub fn find_pair_by_symbol_and_base(symbol: &str, base: &str, pairs: Vec<Pair>) 
 type PairMap = HashMap<String, Vec<Pair>>;
 use std::collections::HashMap;
 
-pub fn average_pairs(pairs: Vec<Pair>) -> Pair {
-    let mut pair = pairs.first().cloned().unwrap();
-    let total_price: f64 = pairs.clone().into_iter().map(|p| p.price).sum();
-    pair.price = total_price / pairs.len() as f64;
-    pair
+pub fn average_pair_price(prices: Vec<Price>) -> f64 {
+    let total_price: f64 = prices.iter().map(|p| p.price).sum();
+    total_price / prices.len() as f64
 }
 
 // todo: remove
@@ -170,13 +151,8 @@ pub fn filter_pairmap_by_symbols(pairs: PairMap, symbols: Vec<&str>) -> PairMap 
         .collect()
 }
 
-pub fn convert_currency(amount: f64, from: Pair, to: Pair) -> Option<f64> {
+pub fn convert_currency(amount: f64, from: Price, to: Price) -> Option<f64> {
     Some((from.price / to.price) * amount)
-    // if from.symbol == to.symbol {
-    //     Some((from.price / to.price) * amount)
-    // } else {
-    //     None
-    // }
 }
 
 // pub fn convert_currency_via(amount: f64, from: Pair, to: Pair, via: Pair) -> Option<f64> {

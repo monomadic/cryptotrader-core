@@ -1,17 +1,19 @@
 use crate::models::*;
-use crate::utils::*;
+use crate::utils::average;
+// use crate::utils::*;
 use chrono::{offset::Local, prelude::DateTime};
 
 #[derive(Debug, Clone)]
 pub struct Trade {
-    pub id: String,
-    pub pair: Pair,
-    pub trade_type: TradeType,
-    pub price: f64,
-    pub qty: f64,
-    pub time: DateTime<Local>,
+    // pub current_price: f64,
     pub fee: f64,
     pub fee_symbol: Option<String>,
+    pub id: String,
+    pub pair: Pair,
+    pub sale_price: f64,
+    pub qty: f64,
+    pub time: DateTime<Local>,
+    pub trade_type: TradeType,
 }
 
 #[derive(Debug, Clone)]
@@ -31,65 +33,57 @@ impl TradePair {
 }
 
 impl Trade {
-    pub fn entry_price(&self) -> f64 {
-        self.price
-    }
+    // pub fn entry_price(&self) -> f64 {
+    //     self.price
+    // }
 
     /// what the trade cost when bought/sold
-    pub fn entry_cost(&self) -> f64 {
-        self.qty * self.price
+    pub fn sale_cost(&self) -> f64 {
+        self.qty * self.sale_price
     }
 
     /// the current value of the trade
-    pub fn current_cost(&self) -> f64 {
-        self.qty * self.pair.price
-    }
+    // pub fn current_cost(&self) -> f64 {
+    //     // self.qty * self.current_price
+    // }
 
-    pub fn current_profit(&self) -> f64 {
-        match self.trade_type {
-            TradeType::Buy => self.current_cost() - self.entry_cost(),
-            TradeType::Sell => self.entry_cost() - self.current_cost(),
-        }
-    }
+    // pub fn current_profit(&self) -> f64 {
+    //     match self.trade_type {
+    //         TradeType::Buy => self.current_cost() - self.sale_cost(),
+    //         TradeType::Sell => self.sale_cost() - self.current_cost(),
+    //     }
+    // }
 
-    pub fn current_profit_as_percent(&self) -> f64 {
-        // log::info!("{} {}, {}", self.trade_type, self.entry_price(), self.current_price());
+    // pub fn current_profit_as_percent(&self) -> f64 {
+    //     // log::info!("{} {}, {}", self.trade_type, self.entry_price(), self.current_price());
 
-        match self.trade_type {
-            TradeType::Buy => price_percent(self.entry_price(), self.current_price()),
-            TradeType::Sell => price_percent(self.current_price(), self.entry_price()),
-        }
-    }
-
-    pub fn current_price(&self) -> f64 {
-        self.pair.price
-    }
-
-    pub fn purchase_price(&self) -> f64 {
-        self.price
-    }
+    //     match self.trade_type {
+    //         TradeType::Buy => price_percent(self.sale_price, self.current_price),
+    //         TradeType::Sell => price_percent(self.current_price, self.sale_price),
+    //     }
+    // }
 
     // ------------------------------------------------------------------------------------------
 
-    // TODO ALIAS - delete
-    pub fn profit_as_percent(&self) -> f64 {
-        self.current_profit_as_percent()
-    }
+    // // TODO ALIAS - delete
+    // pub fn profit_as_percent(&self) -> f64 {
+    //     self.current_profit_as_percent()
+    // }
 
-    // TODO ALIAS - delete
-    pub fn cost(&self) -> f64 {
-        self.entry_cost()
-    }
+    // // // TODO ALIAS - delete
+    // // pub fn cost(&self) -> f64 {
+    // //     self.entry_cost()
+    // // }
 
-    // TODO ALIAS - delete
-    pub fn value(&self) -> f64 {
-        self.current_cost()
-    }
+    // // TODO ALIAS - delete
+    // pub fn value(&self) -> f64 {
+    //     self.current_cost()
+    // }
 
-    // TODO ALIAS - delete
-    pub fn profit(&self) -> f64 {
-        self.current_profit()
-    }
+    // // TODO ALIAS - delete
+    // pub fn profit(&self) -> f64 {
+    //     self.current_profit()
+    // }
 
     // grouping strategy that attempts to group until an asset reaches zero. buggy at the moment.
     pub fn group_by_qty(trades: &Vec<Trade>, qty: f64) -> Vec<Trade> {
@@ -184,8 +178,8 @@ pub fn sum_cost(trades: Vec<Trade>) -> f64 {
     trades
         .into_iter()
         .map(|trade| match trade.trade_type {
-            TradeType::Buy => trade.price * trade.qty,
-            TradeType::Sell => -(trade.price * trade.qty),
+            TradeType::Buy => trade.sale_price * trade.qty,
+            TradeType::Sell => -(trade.sale_price * trade.qty),
         })
         .sum()
 }
@@ -194,7 +188,7 @@ pub fn average_cost(trades: Vec<Trade>) -> f64 {
     let average: f64 = trades
         .clone()
         .into_iter()
-        .map(|trade| trade.qty * trade.price)
+        .map(|trade| trade.qty * trade.sale_price)
         .sum();
     average / sum_qty(trades)
 }
@@ -212,11 +206,14 @@ pub fn average_trades(trades: Vec<Trade>) -> Trade {
     let trades_iter = trades.into_iter();
     let qty = trades_iter.clone().map(|t| t.qty).sum();
 
-    let average_price: f64 = trades_iter.clone().map(|t| t.price * t.qty).sum::<f64>() / qty;
+    //    let average_price: f64 = trades_iter
+    //        .clone()
+    //        .map(|t| t.sale_price * t.qty)
+    //        .sum::<f64>()
+    //        / qty;
 
-    // let average_price = average(&trades_iter.clone().map(|t| t.price).collect());
-
-    let pairs = trades_iter.clone().map(|t| t.pair).collect();
+    let average_price = average(&trades_iter.clone().map(|t| t.sale_price).collect());
+    // let pairs: Vec<Pair> = trades_iter.clone().map(|t| t.pair).collect();
     let id = trades_iter
         .clone()
         .map(|t| t.id)
@@ -225,9 +222,10 @@ pub fn average_trades(trades: Vec<Trade>) -> Trade {
 
     Trade {
         id,
-        pair: average_pairs(pairs),
+        pair: first_trade.pair,
         trade_type: first_trade.trade_type,
-        price: average_price,
+        sale_price: average_price,
+        // current_price: average(trades_iter.clone().map(|t| t.current_price).collect()),
         qty,
         time: first_trade.time,
         fee: trades_iter.map(|t| t.fee).sum(),
@@ -301,7 +299,9 @@ pub fn group_trades_by_price(trades: Vec<Trade>) -> Vec<Trade> {
     current_trade.qty = 0.0;
 
     for trade in trades.clone() {
-        if trade.price == current_trade.price && trade.trade_type == current_trade.trade_type {
+        if trade.sale_price == current_trade.sale_price
+            && trade.trade_type == current_trade.trade_type
+        {
             current_trade.qty += trade.qty;
         } else {
             grouped_trades.push(current_trade.clone());
