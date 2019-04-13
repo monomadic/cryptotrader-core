@@ -12,7 +12,7 @@ impl Price {
             .into_iter()
             .find(|p| {
                 AssetType::from_symbol(&p.pair.symbol) == AssetType::Bitcoin
-                    && AssetType::from_symbol(&p.pair.base) == AssetType::Fiat
+                    && AssetType::from_symbol(&p.pair.base) == AssetType::Stablecoin
             })
             .map(|p| p.clone())
     }

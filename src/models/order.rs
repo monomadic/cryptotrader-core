@@ -28,12 +28,6 @@ pub enum OrderType {
     LimitMaker,
 }
 
-// impl Order {
-//     pub fn price_difference_as_percent(&self) -> f64 {
-//         price_percent(self.current_price, self.purchase_price)
-//     }
-// }
-
 impl fmt::Display for OrderType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match &self {

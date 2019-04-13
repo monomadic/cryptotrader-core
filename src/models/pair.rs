@@ -14,7 +14,7 @@ impl Display for Pair {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum AssetType {
-    Fiat,
+    Stablecoin,
     Bitcoin,
     Altcoin,
 }
@@ -22,7 +22,7 @@ pub enum AssetType {
 impl AssetType {
     pub fn from_symbol(symbol: &str) -> Self {
         if crate::KNOWN_STABLECOIN_SYMBOLS.contains(&symbol) {
-            AssetType::Fiat
+            AssetType::Stablecoin
         } else if crate::KNOWN_BTC_SYMBOLS.contains(&symbol) {
             AssetType::Bitcoin
         } else {
@@ -81,9 +81,9 @@ impl Pair {
     }
 
     pub fn find_first_fiat_pair_for_symbol(symbol: &str, pairs: Vec<Pair>) -> Option<Pair> {
-        pairs
-            .into_iter()
-            .find(|p| p.symbol == symbol && AssetType::from_symbol(&p.base) == AssetType::Fiat)
+        pairs.into_iter().find(|p| {
+            p.symbol == symbol && AssetType::from_symbol(&p.base) == AssetType::Stablecoin
+        })
     }
 }
 

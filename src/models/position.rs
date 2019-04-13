@@ -5,7 +5,7 @@ use crate::utils::*;
 #[derive(Debug, Clone)]
 pub struct Position {
     pub trades: Vec<Trade>,
-    pub asset: Asset, // FIXME: could cause bugs if there are multiple asset types.
+    pub asset: Asset,
 }
 
 impl Position {

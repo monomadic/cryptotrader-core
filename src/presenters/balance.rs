@@ -18,7 +18,7 @@ impl BalancePresenter {
             .map({
                 |asset| match asset.asset_type() {
                     AssetType::Bitcoin => asset.amount,
-                    AssetType::Fiat => asset.amount / btc_price,
+                    AssetType::Stablecoin => asset.amount / btc_price,
                     AssetType::Altcoin => {
                         Price::find_first_btc_price_for_symbol(&asset.symbol, self.prices.clone())
                             .map(|p| p.price)
@@ -55,7 +55,7 @@ impl BalancePresenter {
             .map({
                 |asset| match asset.asset_type() {
                     AssetType::Bitcoin => asset.amount * btc_price,
-                    AssetType::Fiat => asset.amount,
+                    AssetType::Stablecoin => asset.amount,
                     AssetType::Altcoin => {
                         Price::find_first_btc_price_for_symbol(&asset.symbol, self.prices.clone())
                             .map(|p| p.price)
