@@ -5,7 +5,7 @@ use crate::models::*;
 pub struct TradePresenter {
     pub trade: Trade,
     // pub trades: Vec<Vec<Trade>>,
-    pub fiat_pair: Option<Pair>,
+    pub fiat_pair: Pair,
 }
 
 impl TradePresenter {
@@ -35,4 +35,12 @@ impl TradePresenter {
     // pub fn trade_groups(&self) -> Vec<Vec<Trade>> {
     //     self
     // }
+
+    pub fn profit_as_percent(&self) -> f64 {
+        0.0
+    }
+
+    pub fn current_cost_in_fiat(&self) -> f64 {
+        0.0
+    }
 }

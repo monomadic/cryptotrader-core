@@ -19,10 +19,7 @@ pub trait ExchangeAPI {
     fn past_orders(&self) -> CoreResult<Vec<Order>>;
     fn book_tickers(&self) -> CoreResult<Vec<BookTicker>>;
     fn trades_for_pair(&self, pair: Pair) -> CoreResult<Vec<Trade>>;
-    fn trades_for_symbol(&self, symbol: &str, pairs: Vec<Pair>) -> CoreResult<Vec<Trade>>;
     fn chart_data(&self, pair: &str, interval: &str) -> CoreResult<Vec<Candlestick>>;
-    // fn pair_to_string(&self, pair: Pair) -> String;
-    // fn string_to_pair(&self, pair: String, price: f64) -> Option<Pair>;
     fn market_depth(&self, pair: &str) -> CoreResult<Depth>;
     fn symbol_and_base_to_pair_format(&self, symbol: &str, base: &str) -> String;
     fn stop_loss(
@@ -41,6 +38,24 @@ pub trait ExchangeAPI {
             symbol: self.btc_symbol(),
             base: self.usd_symbol(),
         }
+    }
+
+    fn btc_price(&self, prices: Vec<Price>) -> Price {
+        Price::find_first_btc_usd_price(&prices).expect("btc price not found") // fix to be exchange specific
+    }
+
+    /// find all trades for a symbol across all base pairs.
+    fn trades_for_pairs(&self, pairs: Vec<Pair>) -> CoreResult<Vec<Trade>> {
+        let mut trades = Vec::new();
+
+        for pair in pairs {
+            let mut result = self.trades_for_pair(pair)?;
+            trades.append(&mut result);
+        }
+
+        // sort by time
+        trades.sort_by(|a, b| a.time.cmp(&b.time));
+        Ok(trades)
     }
 }
 

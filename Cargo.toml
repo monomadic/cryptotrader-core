@@ -5,21 +5,19 @@ authors = ["Rob Saunders <rob@wearebrandnew.com>"]
 edition = "2018"
 
 [dependencies]
- binance_api = { package = "binance", git = "https://github.com/robsaunders/binance-rs.git" }
+binance_api = { package = "binance", git = "https://github.com/robsaunders/binance-rs.git" }
 #binance_api = { package = "binance", path = "../_forks/binance-rs" }
-talib = { package = "ta-lib-wrapper", version = "0.1.1" }
-reqwest = "0.8.4"
+#huobi_api = { package = "huobi", git = "https://github.com/robsaunders/huobi-rs.git" }
+huobi_api = { package = "huobi", path = "../huobi-rs" }
 math = "*"
 toml = "*"
 serde = "^1.0"
 serde_derive = "^1.0"
 serde_json = "*"
-rayon = "1.0"
 dirs = "1.0"
 log = "0.4.5"
 simple_logger = "1.0.1"
 chrono = "0.4.6"
-ta = "0.1.1"
 
 [lib]
 name = "cryptotrader"

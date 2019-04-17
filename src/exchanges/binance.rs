@@ -269,26 +269,6 @@ impl ExchangeAPI for BinanceAPI {
         Ok(trades)
     }
 
-    /// find all trades for a symbol across all base pairs.
-    fn trades_for_symbol(&self, symbol: &str, pairs: Vec<Pair>) -> CoreResult<Vec<Trade>> {
-        info!("BINANCE: trades_for_symbol({})", symbol);
-
-        let symbol = symbol.to_uppercase();
-        let pairs = Pair::base_pairs_for_symbol(&symbol, &pairs);
-
-        let mut trades = Vec::new();
-
-        for pair in pairs {
-            let mut result = self.trades_for_pair(pair)?;
-            info!("result: {:?}", result);
-            trades.append(&mut result);
-        }
-
-        // sort by time
-        trades.sort_by(|a, b| a.time.cmp(&b.time));
-        Ok(trades)
-    }
-
     fn chart_data(&self, pair: &str, interval: &str) -> CoreResult<Vec<Candlestick>> {
         Ok(self
             .market

@@ -1,4 +1,4 @@
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Pair {
     pub base: String,
     pub symbol: String,
@@ -83,6 +83,13 @@ impl Pair {
     pub fn find_first_fiat_pair_for_symbol(symbol: &str, pairs: Vec<Pair>) -> Option<Pair> {
         pairs.into_iter().find(|p| {
             p.symbol == symbol && AssetType::from_symbol(&p.base) == AssetType::Stablecoin
+        })
+    }
+
+    pub fn find_first_stablecoin_pair(pairs: Vec<Pair>) -> Option<Pair> {
+        pairs.into_iter().find(|p| {
+            AssetType::from_symbol(&p.base) == AssetType::Bitcoin
+                && AssetType::from_symbol(&p.base) == AssetType::Stablecoin
         })
     }
 }

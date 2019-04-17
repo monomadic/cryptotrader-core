@@ -5,7 +5,6 @@ use chrono::{offset::Local, prelude::DateTime};
 
 #[derive(Debug, Clone)]
 pub struct Trade {
-    // pub current_price: f64,
     pub fee: f64,
     pub fee_symbol: Option<String>,
     pub id: String,
@@ -311,4 +310,25 @@ pub fn group_trades_by_price(trades: Vec<Trade>) -> Vec<Trade> {
 
     grouped_trades.push(current_trade.clone());
     grouped_trades
+}
+
+pub trait TradeUtils {
+    fn buys_only(&self) -> Vec<Trade>;
+    fn sells_only(&self) -> Vec<Trade>;
+}
+
+impl TradeUtils for Vec<Trade> {
+    fn buys_only(&self) -> Vec<Trade> {
+        self.into_iter()
+            .filter(|t| t.trade_type == TradeType::Buy)
+            .cloned()
+            .collect()
+    }
+
+    fn sells_only(&self) -> Vec<Trade> {
+        self.into_iter()
+            .filter(|t| t.trade_type == TradeType::Sell)
+            .cloned()
+            .collect()
+    }
 }
