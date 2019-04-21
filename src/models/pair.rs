@@ -32,6 +32,15 @@ impl AssetType {
 }
 
 impl Pair {
+
+    pub fn from_string(pair: &str) -> Pair {
+        let pair = pair.replace("_", "-");
+        let mut split_pair = pair.split('-');
+        let symbol = split_pair.next().unwrap_or("missing").to_uppercase();
+        let base = split_pair.last().unwrap_or("missing").to_uppercase();
+        Pair { symbol, base }
+    }
+
     /// This is only a guess, based on the stablecoins out there.
     pub fn base_type(&self) -> AssetType {
         AssetType::from_symbol(&self.base)

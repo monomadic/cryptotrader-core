@@ -17,20 +17,33 @@ pub static BTC_SYMBOL: &str = "BTC";
 pub static USD_SYMBOL: &str = "USDT";
 
 impl HuobiAPI {
+    pub fn cached_default_account(&self) -> u32 {
+        if self.default_account == 0 {
+            self.client.accounts().unwrap_or(Vec::new()).first().map(|account| account.account_id.clone()).unwrap_or(0)
+        } else {
+            self.default_account
+        }
+    }
+
     pub fn new(api_key: &str, secret_key: &str) -> CoreResult<Self> {
         let client = huobi_api::Client::new(api_key, secret_key);
-        let accounts: Vec<huobi_api::models::Account> = client.accounts()?;
+//        let accounts: Vec<huobi_api::models::Account> = client.accounts()?;
+//
+//        if let Some(account) = accounts.first() {
+//            return Ok(Self {
+//                client,
+//                default_account: account.account_id,
+//            });
+//        };
 
-        if let Some(account) = accounts.first() {
-            return Ok(Self {
-                client,
-                default_account: account.account_id,
-            });
-        };
+//        Err(Box::new(TrailerError::APIError(
+//            "no accounts found.".to_string(),
+//        )))
 
-        Err(Box::new(TrailerError::APIError(
-            "no accounts found.".to_string(),
-        )))
+        Ok(Self {
+            client,
+            default_account: 0,
+        })
     }
 }
 
@@ -57,7 +70,7 @@ impl ExchangeAPI for HuobiAPI {
     fn balances(&self) -> CoreResult<Vec<Asset>> {
         Ok(self
             .client
-            .balance(self.default_account)?
+            .balance(self.cached_default_account())?
             .list
             .into_iter()
             .map(|a| Asset {
@@ -79,8 +92,8 @@ impl ExchangeAPI for HuobiAPI {
             .common_symbols()?
             .into_iter()
             .map(|p: huobi_api::Pair| Pair {
-                base: p.base_currency,
-                symbol: p.symbol,
+                base: p.base_currency.to_uppercase(),
+                symbol: p.symbol.to_uppercase(),
             })
             .collect())
     }
@@ -123,7 +136,7 @@ impl ExchangeAPI for HuobiAPI {
     fn trades_for_pair(&self, pair: Pair) -> CoreResult<Vec<Trade>> {
         Ok(self
             .client
-            .orders(&pair_to_string(pair.clone()))?
+            .orders(&pair_to_string(pair.clone()), "filled")?
             .into_iter()
             .map(|t| {
                 //                let pair = string_to_pair(&t.symbol).expect("pair to be found");

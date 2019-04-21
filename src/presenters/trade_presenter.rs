@@ -1,4 +1,5 @@
 use crate::models::*;
+use crate::utils::price_percent;
 // use crate::utils::*;
 
 #[derive(Debug, Clone)]
@@ -6,6 +7,8 @@ pub struct TradePresenter {
     pub trade: Trade,
     // pub trades: Vec<Vec<Trade>>,
     pub fiat_pair: Pair,
+//    prices: Vec<Price>,
+    pub price_in_trade_currency: f64,
 }
 
 impl TradePresenter {
@@ -36,8 +39,21 @@ impl TradePresenter {
     //     self
     // }
 
+//    pub fn current_price_in(&self, base: &str) -> Option<f64> {
+//        self.prices.price_for(Pair{
+//            symbol: self.trade.pair.symbol,
+//            base:
+//        })
+//    }
+
+    // the current price in the currency the trade was made in, eg if the trade was in btc,
+    // this returns the current price in btc.
+    pub fn current_price(&self) -> f64 {
+        self.price_in_trade_currency
+    }
+
     pub fn profit_as_percent(&self) -> f64 {
-        0.0
+        price_percent(self.trade.sale_price, self.current_price())
     }
 
     pub fn current_cost_in_fiat(&self) -> f64 {
