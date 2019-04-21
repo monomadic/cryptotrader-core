@@ -21,3 +21,21 @@ impl Display for Asset {
         write!(f, "{}", self.symbol)
     }
 }
+
+pub trait AssetExtensions {
+    fn filter_zero_balances(&self) -> Self;
+    fn filter_small_balances(&self, min: f64) -> Self;
+}
+
+impl AssetExtensions for Vec<Asset> {
+    fn filter_zero_balances(&self) -> Self {
+        self.filter_small_balances(0.0)
+    }
+
+    fn filter_small_balances(&self, min: f64) -> Self {
+        self.into_iter()
+            .filter(|asset| asset.amount > min)
+            .map(|a| a.clone())
+            .collect()
+    }
+}
