@@ -1,8 +1,7 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use crate::utils::*;
-use crate::{error::*, exchanges::*, models::*};
+use crate::{error::*, exchanges::*, models::*, utils::*};
 use log::info;
 
 use binance_api::{account::*, api::*, market::*};
@@ -20,8 +19,22 @@ pub static BTC_SYMBOL: &str = "BTC";
 pub static USD_SYMBOL: &str = "USDT";
 
 impl ExchangeAPI for BinanceAPI {
+    fn new() -> Self {
+        Self {
+            account: Binance::new(None, None),
+            market: Market::new(None, None),
+        }
+    }
+
+    fn authenticate(&self, api_key: &str, secret_key: &str) -> Self {
+        Self {
+            account: Binance::new(Some(api_key.to_string()), Some(secret_key.to_string())),
+            market: Market::new(None, None),
+        }
+    }
+
     fn display(&self) -> String {
-        "Binance".to_string()
+        "binance".to_string()
     }
 
     fn btc_symbol(&self) -> String {
@@ -288,7 +301,14 @@ impl ExchangeAPI for BinanceAPI {
 }
 
 impl BinanceAPI {
-    pub fn new(api_key: &str, secret_key: &str) -> Self {
+//    pub fn new() -> Self {
+//        Self {
+//            account: Binance::new(None, None),
+//            market: Market::new(None, None),
+//        }
+//    }
+
+    pub fn authenticated(api_key: &str, secret_key: &str) -> Self {
         BinanceAPI {
             account: Binance::new(Some(api_key.to_string()), Some(secret_key.to_string())),
             market: Market::new(None, None),

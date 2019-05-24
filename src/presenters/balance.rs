@@ -7,6 +7,14 @@ pub struct BalancePresenter {
 }
 
 impl BalancePresenter {
+    pub fn _total_value_in(&self, symbol: &str) -> f64 {
+        self.assets
+            .clone()
+            .into_iter()
+            .map(|asset| self.prices.price_of(&asset.symbol, symbol).unwrap_or(0.0))
+            .sum()
+    }
+
     // todo: this doesn't need to be an option does it?
     pub fn total_value_in_btc(&self) -> f64 {
         let btc_price = Price::find_first_btc_usd_price(&self.prices)

@@ -4,6 +4,15 @@ pub struct Pair {
     pub symbol: String,
 }
 
+impl Pair {
+    pub fn new(symbol: &str, base: &str) -> Self {
+        Self {
+            symbol: symbol.to_string(),
+            base: base.to_string(),
+        }
+    }
+}
+
 use crate::models::price::Price;
 use std::{fmt, fmt::Display};
 impl Display for Pair {
@@ -32,7 +41,6 @@ impl AssetType {
 }
 
 impl Pair {
-
     pub fn from_string(pair: &str) -> Pair {
         let pair = pair.replace("_", "-");
         let mut split_pair = pair.split('-');

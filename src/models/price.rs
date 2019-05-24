@@ -32,6 +32,7 @@ pub trait PriceUtils {
     fn price_for(&self, pair: Pair) -> Option<f64>;
     fn filter_by(&self, symbol: &str) -> Vec<Price>;
     fn first_btc_price_for(&self, symbol: &str) -> Option<Price>;
+    fn price_of(&self, symbol: &str, base: &str) -> Option<f64>;
 }
 
 impl PriceUtils for Vec<Price> {
@@ -57,5 +58,15 @@ impl PriceUtils for Vec<Price> {
                     && AssetType::from_symbol(&p.pair.base) == AssetType::Bitcoin
             })
             .map(|p| p.clone())
+    }
+
+    fn price_of(&self, symbol: &str, base: &str) -> Option<f64> {
+        if symbol == base {
+            return Some(1.0);
+        };
+
+        self.price_for(Pair::new(symbol, base)).or(self
+            .price_for(Pair::new(base, symbol))
+            .map(|price| 1.0 / price))
     }
 }

@@ -24,30 +24,23 @@ impl HuobiAPI {
             self.default_account
         }
     }
-
-    pub fn new(api_key: &str, secret_key: &str) -> CoreResult<Self> {
-        let client = huobi_api::Client::new(api_key, secret_key);
-//        let accounts: Vec<huobi_api::models::Account> = client.accounts()?;
-//
-//        if let Some(account) = accounts.first() {
-//            return Ok(Self {
-//                client,
-//                default_account: account.account_id,
-//            });
-//        };
-
-//        Err(Box::new(TrailerError::APIError(
-//            "no accounts found.".to_string(),
-//        )))
-
-        Ok(Self {
-            client,
-            default_account: 0,
-        })
-    }
 }
 
 impl ExchangeAPI for HuobiAPI {
+    fn new() -> Self {
+        Self {
+            client: huobi_api::Client::new("", ""),
+            default_account: 0,
+        }
+    }
+
+    fn authenticate(&self, key: &str, secret: &str) -> Self {
+        Self {
+            client: huobi_api::Client::new(key, secret),
+            default_account: 0,
+        }
+    }
+
     fn display(&self) -> String {
         "huobi".to_string()
     }

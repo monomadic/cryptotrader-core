@@ -5,6 +5,8 @@ use crate::models::*;
 use serde_derive::Deserialize;
 
 pub trait ExchangeAPI {
+    fn new() -> Self;
+    fn authenticate(&self, key: &str, secret: &str) -> Self;
     fn display(&self) -> String;
     fn btc_symbol(&self) -> String;
     fn usd_symbol(&self) -> String;
