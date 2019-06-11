@@ -7,8 +7,8 @@ edition = "2018"
 [dependencies]
 binance_api = { package = "binance", git = "https://github.com/robsaunders/binance-rs.git" }
 #binance_api = { package = "binance", path = "../_forks/binance-rs" }
-#huobi_api = { package = "huobi", git = "https://github.com/robsaunders/huobi-rs.git" }
-huobi_api = { package = "huobi", path = "../huobi-rs" }
+huobi_api = { package = "huobi", git = "https://github.com/robsaunders/huobi-rs.git" }
+# huobi_api = { package = "huobi", path = "../huobi-rs" }
 math = "*"
 toml = "*"
 serde = "^1.0"
